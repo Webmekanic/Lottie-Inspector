@@ -71,6 +71,7 @@ function App() {
           currentFrame={currentFrame}
           totalFrames={totalFrames}
           onFrameChange={handlers.handleFrameChange}
+          onFrameUpdate={handlers.handleFrameUpdate}
           speed={speed}
           onSpeedChange={handlers.handleSpeedChange}
           loop={loop}
@@ -81,7 +82,8 @@ function App() {
         <RightPanel
           selectedLayer={selectedLayer}
           selectedLayerIndex={selectedLayerIndex}
-          onPropertyChange={handlers.handlePropertyChange}
+          animation={currentAnimation}
+          onSend={send}
         />
       </div>
       <BottomTimeline
@@ -89,7 +91,9 @@ function App() {
         currentFrame={currentFrame}
         totalFrames={totalFrames}
         onFrameChange={handlers.handleFrameChange}
-        selectedLayer={selectedLayer}
+        selectedLayerIndex={selectedLayerIndex} 
+        isPlaying={isPlaying}   
+        onLayerSelect={idx => send({ type: 'SELECT_LAYER', layerIndex: idx })}
       />
     </div>
   )

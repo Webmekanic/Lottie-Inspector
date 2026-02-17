@@ -24,6 +24,7 @@ export type LottieEvent =
   | { type: 'PAUSE' }
   | { type: 'TOGGLE_PLAYBACK' }
   | { type: 'SCRUB'; frame: number }
+  | { type: 'UPDATE_FRAME'; frame: number }
   | { type: 'SET_SPEED'; speed: number }
   | { type: 'TOGGLE_LOOP' }
   | { type: 'SWITCH_RENDER_MODE'; mode: RenderMode }
@@ -189,10 +190,24 @@ export const lottieStateMachine = setup({
               const layer = newAnimation.layers[event.layerIndex];
               
               if (layer) {
-                layer.visible = layer.visible === false;
+                layer.visible = !(layer.visible === false);
               }
               
               return newAnimation;
+            },
+            selectedLayer: ({ context, event }) => {
+              if (context.selectedLayerIndex !== event.layerIndex || !context.currentAnimation) {
+                return context.selectedLayer;
+              }
+              
+              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
+              const layer = newAnimation.layers[event.layerIndex];
+              
+              if (layer) {
+                layer.visible = !(layer.visible === false);
+              }
+              
+              return layer;
             },
           }),
         },
@@ -210,6 +225,20 @@ export const lottieStateMachine = setup({
               
               return newAnimation;
             },
+            selectedLayer: ({ context, event }) => {
+              if (context.selectedLayerIndex !== event.layerIndex || !context.currentAnimation) {
+                return context.selectedLayer;
+              }
+              
+              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
+              const layer = newAnimation.layers[event.layerIndex];
+              
+              if (layer) {
+                layer.locked = !layer.locked;
+              }
+              
+              return layer;
+            },
           }),
         },
         PLAY: {
@@ -225,6 +254,11 @@ export const lottieStateMachine = setup({
           actions: assign({
             currentFrame: ({ event }) => event.frame,
             isPlaying: false,
+          }),
+        },
+        UPDATE_FRAME: {
+          actions: assign({
+            currentFrame: ({ event }) => event.frame,
           }),
         },
         SET_SPEED: {

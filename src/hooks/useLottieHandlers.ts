@@ -41,6 +41,10 @@ export function useLottieHandlers({ send }: UseLottieHandlersProps) {
     send({ type: 'SCRUB', frame });
   };
 
+  const handleFrameUpdate = (frame: number) => {
+    send({ type: 'UPDATE_FRAME', frame });
+  };
+
   const handleSpeedChange = (newSpeed: number) => {
     send({ type: 'SET_SPEED', speed: newSpeed });
   };
@@ -68,6 +72,7 @@ export function useLottieHandlers({ send }: UseLottieHandlersProps) {
     handleToggleLock,
     handlePlayPause,
     handleFrameChange,
+    handleFrameUpdate,
     handleSpeedChange,
     handleLoopToggle,
     handlePropertyChange,
