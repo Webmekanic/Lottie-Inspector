@@ -1,6 +1,8 @@
 import { TopNavBar } from './app/components/TopNavBar';
 import { LeftPanel } from './app/components/LeftPanel';
 import { CenterPanel } from './app/components/CenterPanel';
+import { RightPanel } from './app/components/RightPanel';
+import { BottomTimeline } from './app/components/BottomTimeLine';
 
 function App() {
   return (
@@ -38,7 +40,19 @@ function App() {
             onLoopToggle={() => console.log('Loop toggled')}
             onPlayPause={() => console.log('Play/Pause toggled')}
         />
-        </div>
+        <RightPanel
+          selectedLayer={null}
+          selectedLayerIndex={null}
+          onPropertyChange={(layerIndex, property, value) => console.log('Property changed:', { layerIndex, property, value })}
+        />
+      </div>
+      <BottomTimeline
+        currentFrame={0}
+        totalFrames={0}
+        onFrameChange={(frame) => console.log('Frame changed to:', frame)}
+        animation={null}
+        selectedLayer={null}
+      />
     </div>
   )
 }
