@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import lottie, { AnimationItem } from 'lottie-web';
 import { LottieAnimation, RenderMode } from '../../types/lottie';
 import { useUIStore } from '../../stores/uiStore';
+import { usePlaybackTicker } from '../../hooks/usePlaybackTicker';
 
 interface CenterPanelProps {
   animation: LottieAnimation | null;
@@ -14,6 +15,7 @@ interface CenterPanelProps {
   currentFrame: number;
   totalFrames: number;
   onFrameChange: (frame: number) => void;
+  onFrameUpdate?: (frame: number) => void;
   speed: number;
   onSpeedChange: (speed: number) => void;
   loop: boolean;
@@ -29,6 +31,7 @@ export function CenterPanel({
   currentFrame,
   totalFrames,
   onFrameChange,
+  onFrameUpdate,
   speed,
   onSpeedChange,
   loop,
@@ -41,6 +44,13 @@ export function CenterPanel({
   const { zoomLevel, zoomIn, zoomOut, setCurrentFPS } = useUIStore();
   const lastFrameTimeRef = useRef<number>(Date.now());
   const frameCountRef = useRef<number>(0);
+
+  // Use playback ticker hook to sync frames during playback
+  usePlaybackTicker({
+    animationRef,
+    isPlaying,
+    onFrameUpdate: onFrameUpdate || (() => {}),
+  });
 
   useEffect(() => {
     if (!animation || !containerRef.current) return;
@@ -62,7 +72,7 @@ export function CenterPanel({
       animationRef.current.goToAndStop(currentFrame, true);
 
       // Calculate FPS
-      animationRef.current.addEventListener('enterFrame', () => {
+      const handleFPSFrame = () => {
         frameCountRef.current++;
         const now = Date.now();
         const elapsed = now - lastFrameTimeRef.current;
@@ -73,7 +83,9 @@ export function CenterPanel({
           frameCountRef.current = 0;
           lastFrameTimeRef.current = now;
         }
-      });
+      };
+
+      animationRef.current.addEventListener('enterFrame', handleFPSFrame);
     } catch (error) {
       console.error('Failed to load Lottie animation:', error);
     }
@@ -120,7 +132,11 @@ export function CenterPanel({
     animationRef.current.addEventListener('complete', handleComplete);
 
     return () => {
-      animationRef.current?.removeEventListener('complete', handleComplete);
+      try {
+        animationRef.current?.removeEventListener('complete', handleComplete);
+      } catch (error) {
+        // Animation was already destroyed, ignore error
+      }
     };
   }, [loop, onFrameChange]);
 
