@@ -1,8 +1,3 @@
-/**
- * Top Navigation Bar Component
- * Features: File upload, export, reset, render mode toggle, FPS indicator, theme toggle
- */
-
 import { useRef } from 'react';
 import { Upload, Download, RotateCcw, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
@@ -54,8 +49,6 @@ export function TopNavBar({
         </div>
         <span className="text-gray-400 text-sm">{fileName || 'No file loaded'}</span>
       </div>
-
-      {/* Center Section */}
       <div className="flex items-center gap-3">
         <input
           ref={fileInputRef}
@@ -68,7 +61,7 @@ export function TopNavBar({
           className="bg-blue-600 hover:bg-blue-700 text-white"
           onClick={() => fileInputRef.current?.click()}
         >
-          <Upload className="w-4 h-4 mr-2" />
+          <Upload />
           Upload JSON
         </Button>
         <Button 
@@ -77,7 +70,7 @@ export function TopNavBar({
           onClick={onExport}
           disabled={!hasAnimation}
         >
-          <Download className="w-4 h-4 mr-2" />
+          <Download />
           Export
         </Button>
         <Button 
@@ -86,12 +79,10 @@ export function TopNavBar({
           onClick={onReset}
           disabled={!hasAnimation}
         >
-          <RotateCcw className="w-4 h-4 mr-2" />
+          <RotateCcw />
           Reset
         </Button>
       </div>
-
-      {/* Right Section */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 rounded-md">
           <span className={`text-xs ${renderMode === 'svg' ? 'text-white' : 'text-gray-500'}`}>SVG</span>
