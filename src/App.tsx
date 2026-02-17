@@ -1,9 +1,9 @@
 import { TopNavBar } from './app/components/TopNavBar';
+import { LeftPanel } from './app/components/LeftPanel';
 
 function App() {
-
   return (
-    <div className="min-h-screen bg-gray-200">
+    <div className="h-screen w-screen flex flex-col bg-gray-950 text-white overflow-hidden">
         <TopNavBar
           fileName="example.json"
           renderMode="canvas"
@@ -14,6 +14,15 @@ function App() {
           onReset={() => console.log('Reset triggered')}
           hasAnimation={true}
         />
+        <div className="flex-1 flex overflow-hidden">
+          <LeftPanel
+            animation={null}
+            selectedLayerIndex={null}
+            onLayerSelect={(index) => console.log('Layer selected:', index)}
+            onToggleVisibility={(index) => console.log('Toggle visibility for layer:', index)}
+            onToggleLock={(index) => console.log('Toggle lock for layer:', index)}
+          />
+        </div>
     </div>
   )
 }
