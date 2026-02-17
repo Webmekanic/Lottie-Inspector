@@ -1,5 +1,6 @@
 import { TopNavBar } from './app/components/TopNavBar';
 import { LeftPanel } from './app/components/LeftPanel';
+import { CenterPanel } from './app/components/CenterPanel';
 
 function App() {
   return (
@@ -22,6 +23,21 @@ function App() {
             onToggleVisibility={(index) => console.log('Toggle visibility for layer:', index)}
             onToggleLock={(index) => console.log('Toggle lock for layer:', index)}
           />
+
+          <CenterPanel
+            animation={null}
+            renderMode="canvas"
+            isPlaying={false}
+            currentFrame={0}
+            loop={false}
+            onFrameChange={(frame) => console.log('Frame changed to:', frame)}
+            speed={1}
+            onSpeedChange={(speed) => console.log('Speed changed to:', speed)}
+            totalFrames={0}
+            selectedLayerIndex={null}
+            onLoopToggle={() => console.log('Loop toggled')}
+            onPlayPause={() => console.log('Play/Pause toggled')}
+        />
         </div>
     </div>
   )
