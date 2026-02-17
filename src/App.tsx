@@ -1,6 +1,7 @@
 import { TopNavBar } from './app/components/TopNavBar';
 import { LeftPanel } from './app/components/LeftPanel';
 import { CenterPanel } from './app/components/CenterPanel';
+import { RightPanel } from './app/components/RightPanel';
 
 function App() {
   return (
@@ -37,6 +38,11 @@ function App() {
             selectedLayerIndex={null}
             onLoopToggle={() => console.log('Loop toggled')}
             onPlayPause={() => console.log('Play/Pause toggled')}
+        />
+        <RightPanel
+          selectedLayer={null}
+          selectedLayerIndex={null}
+          onPropertyChange={(layerIndex, property, value) => console.log('Property changed:', { layerIndex, property, value })}
         />
         </div>
     </div>
