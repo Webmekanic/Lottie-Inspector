@@ -3,7 +3,7 @@ import { TopNavBar } from './app/components/TopNavBar';
 function App() {
 
   return (
-    <div className="min-h-screen bg-gray-200 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-200">
         <TopNavBar
           fileName="example.json"
           renderMode="canvas"
