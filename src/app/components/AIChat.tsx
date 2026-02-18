@@ -114,10 +114,8 @@ Generate the appropriate property update with COMPLETE property object:`;
 
   // Use different endpoint for dev vs production
   const endpoint = import.meta.env.MODE === 'development'
-    ? '/api/anthropic/v1/messages'  // Dev proxy
-    : '/api/anthropic';              // Vercel serverless function
-
-  console.log('Calling API with key:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NO KEY');
+    ? '/api/anthropic/v1/messages' 
+    : '/api/anthropic';
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -213,8 +211,8 @@ function SuggestedPrompts({ onSelect }: { onSelect: (prompt: string) => void }) 
     "Make this rotate 360 degrees",
     "Double the scale",
     "Move 50 pixels to the right",
+     "Make it bounce",
     "Fade in over 2 seconds",
-    "Make it bounce",
     "Reduce opacity to 50%",
   ];
 
