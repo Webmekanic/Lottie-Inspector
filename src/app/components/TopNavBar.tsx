@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Upload, Download, RotateCcw, Sun, Moon } from 'lucide-react';
 import { Switch } from './ui/switch';
+import { TourTriggerButton } from '../../components/Tour/TourTriggerButton';
 import { useUIStore } from '../../stores/uiStore';
 import * as S from '../../styles/TopNavBarStyles';
 
@@ -58,6 +59,7 @@ export function TopNavBar({
         <S.StyledButton
           $variant="primary"
           onClick={() => fileInputRef.current?.click()}
+          data-tour="upload-button"
         >
           <Upload size={16} />
           Upload JSON
@@ -67,6 +69,7 @@ export function TopNavBar({
           onClick={onExport}
           disabled={!hasAnimation}
           $disabled={!hasAnimation}
+          data-tour="export-button"
         >
           <Download size={16} />
           Export
@@ -83,7 +86,8 @@ export function TopNavBar({
       </S.MiddleSection>
 
       <S.RightSection>
-        <S.RenderModeToggle>
+        <TourTriggerButton />
+        <S.RenderModeToggle data-tour="render-mode">
           <S.ModeLabel $active={renderMode === 'svg'}>SVG</S.ModeLabel>
           <Switch
             checked={renderMode === 'canvas'}
@@ -93,7 +97,7 @@ export function TopNavBar({
           <S.ModeLabel $active={renderMode === 'canvas'}>Canvas</S.ModeLabel>
         </S.RenderModeToggle>
         <S.FpsBadge>{fps.toFixed(1)} FPS</S.FpsBadge>
-        <S.ThemeToggleButton onClick={toggleTheme}>
+        <S.ThemeToggleButton onClick={toggleTheme} data-tour="theme-toggle">
           {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
         </S.ThemeToggleButton>
       </S.RightSection>

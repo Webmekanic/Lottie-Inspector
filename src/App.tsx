@@ -8,6 +8,7 @@ import { LeftPanel } from './app/components/LeftPanel';
 import { CenterPanel } from './app/components/CenterPanel';
 import { RightPanel } from './app/components/RightPanel';
 import { BottomTimeline } from './app/components/BottomTimeLine';
+import { Tour } from './components/Tour/Tour';
 import { useLottieHandlers } from './hooks/useLottieHandlers';
 import { lottieStateMachine } from './machines/lottieStateMachine';
 import { AppContainer, MainContent } from './styles/UiStyles';
@@ -60,7 +61,8 @@ function App() {
   }
 
   return (
-    <AppContainer>
+    <AppContainer data-tour="app-container">
+      <Tour />
       <TopNavBar
         fileName={fileName}
         renderMode={renderMode}

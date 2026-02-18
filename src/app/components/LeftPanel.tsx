@@ -166,7 +166,7 @@ function LayerRow({
   );
 
   return (
-    <div className="group">
+    <div className="group" data-tour="layer-item">
       <S.LayerRowContainer
         $isSelected={isSelected}
         $isVisible={isVisible}
@@ -287,14 +287,14 @@ export function LeftPanel({
   }, [animation]);
 
   return (
-    <S.PanelContainer>
+    <S.PanelContainer data-tour="left-panel">
       {/* Tabs */}
       <S.TabsContainer>
         <S.TabButton $active={activeTab === 'layers'} onClick={() => setActiveTab('layers')}>
           <Layers />
           Layers
         </S.TabButton>
-        <S.TabButton $active={activeTab === 'ai'} onClick={() => setActiveTab('ai')}>
+        <S.TabButton $active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} data-tour="ai-chat-tab">
           <Sparkles />
           AI Chat
           <S.TabBadge>NEW</S.TabBadge>

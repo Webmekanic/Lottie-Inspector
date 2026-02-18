@@ -191,7 +191,7 @@ export function BottomTimeline({
   }
 
   return (
-    <S.Container height={panelHeight}>
+    <S.Container height={panelHeight} data-tour="bottom-timeline">
       <S.ResizeHandle onMouseDown={onResizeDown}>
         <S.ResizeBar />
       </S.ResizeHandle>

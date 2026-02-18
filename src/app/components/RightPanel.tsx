@@ -446,7 +446,7 @@ export function RightPanel({
   }
 
   return (
-    <S.PanelContainer>
+    <S.PanelContainer data-tour="right-panel">
       <S.Header>
         <S.HeaderContent>
           <S.HeaderInfo>
