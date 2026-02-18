@@ -63,7 +63,7 @@ function cleanLottieData(obj: any): any {
   if (typeof obj === 'object') {
     const cleaned: any = {};
     
-    for (const key in obj) {
+    for (const key of Object.keys(obj)) {
       // Skip lottie-web internal properties
       if (key === '_render' || key === 'completed' || key === '__complete') {
         continue;
