@@ -48,8 +48,41 @@ const parseFile = fromPromise(async ({ input }: { input: { file: File } }): Prom
   });
 });
 
+/**
+ * Recursively clean lottie-web internal properties from animation data
+ */
+function cleanLottieData(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(cleanLottieData);
+  }
+
+  if (typeof obj === 'object') {
+    const cleaned: any = {};
+    
+    for (const key in obj) {
+      // Skip lottie-web internal properties
+      if (key === '_render' || key === 'completed' || key === '__complete') {
+        continue;
+      }
+      
+      cleaned[key] = cleanLottieData(obj[key]);
+    }
+    
+    return cleaned;
+  }
+
+  return obj;
+}
+
 const exportFile = fromPromise(async ({ input }: { input: { animation: LottieAnimation } }): Promise<void> => {
-  const dataStr = JSON.stringify(input.animation, null, 2);
+  // Clean the animation data by removing lottie-web internal properties
+  const cleanedAnimation = cleanLottieData(input.animation);
+  
+  const dataStr = JSON.stringify(cleanedAnimation, null, 2);
   const dataBlob = new Blob([dataStr], { type: 'application/json' });
   const url = URL.createObjectURL(dataBlob);
   
