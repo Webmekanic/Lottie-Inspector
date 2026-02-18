@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useMachine } from '@xstate/react';
 import { useUIStore } from './stores/uiStore';
+import { saveToLocalStorage } from './utils/localStorage';
 import { ErrorState } from './app/components/ErrorState';
 import { TopNavBar } from './app/components/TopNavBar';
 import { LeftPanel } from './app/components/LeftPanel';
@@ -32,6 +33,19 @@ function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
+
+  // Persist state to localStorage
+  useEffect(() => {
+    if (currentAnimation) {
+      saveToLocalStorage({
+        originalAnimation: state.context.originalAnimation,
+        currentAnimation,
+        speed,
+        loop,
+        renderMode,
+      });
+    }
+  }, [currentAnimation, state.context.originalAnimation, speed, loop, renderMode]);
 
   const handlers = useLottieHandlers({ send });
 
