@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import styled from 'styled-components';
 import { useMachine } from '@xstate/react';
 import { useUIStore } from './stores/uiStore';
 import { saveToLocalStorage } from './utils/localStorage';
@@ -11,22 +10,7 @@ import { RightPanel } from './app/components/RightPanel';
 import { BottomTimeline } from './app/components/BottomTimeLine';
 import { useLottieHandlers } from './hooks/useLottieHandlers';
 import { lottieStateMachine } from './machines/lottieStateMachine';
-
-const AppContainer = styled.div`
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  background-color: ${({ theme }) => theme.colors.gray950};
-  color: ${({ theme }) => theme.colors.white};
-  overflow: hidden;
-`;
-
-const MainContent = styled.div`
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-`;
+import { AppContainer, MainContent } from './styles/UiStyles';
 
 function App() {
   const [state, send] = useMachine(lottieStateMachine);
