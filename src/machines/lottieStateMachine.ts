@@ -190,7 +190,8 @@ export const lottieStateMachine = setup({
               const layer = newAnimation.layers[event.layerIndex];
               
               if (layer) {
-                layer.visible = !(layer.visible === false);
+                // Toggle hidden property: hd=true means hidden, hd=false/undefined means visible
+                layer.hd = !layer.hd;
               }
               
               return newAnimation;
@@ -204,7 +205,7 @@ export const lottieStateMachine = setup({
               const layer = newAnimation.layers[event.layerIndex];
               
               if (layer) {
-                layer.visible = !(layer.visible === false);
+                layer.hd = !layer.hd;
               }
               
               return layer;
@@ -231,13 +232,13 @@ export const lottieStateMachine = setup({
               }
               
               const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const layer = newAnimation.layers[event.layerIndex];
+              const updatedLayer = newAnimation.layers[event.layerIndex];
               
-              if (layer) {
-                layer.locked = !layer.locked;
+              if (updatedLayer) {
+                updatedLayer.locked = !updatedLayer.locked;
               }
               
-              return layer;
+              return updatedLayer;
             },
           }),
         },

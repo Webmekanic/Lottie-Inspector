@@ -50,7 +50,7 @@ export interface LottieLayer {
   refId?: string;
   
   // Additional properties
-  visible?: boolean;
+  hd?: boolean;
   locked?: boolean;
 }
 
