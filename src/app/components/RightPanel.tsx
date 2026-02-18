@@ -1,16 +1,12 @@
-import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
+import * as S from '../../styles/RightPanelStyles';
 import { useEffect, useState, useCallback } from 'react';
 import {
   Move,
-  Maximize2,
-  RotateCw,
-  Eye,
   Droplets,
   PenLine,
-  Layers,
   Info,
   Clock,
   Link2,
@@ -28,17 +24,6 @@ interface RightPanelProps {
   animation: LottieAnimation | null;
   /** Wire directly to XState: send(event) */
   onSend: (event: LottieEvent) => void;
-}
-
-interface FillData {
-  color: [number, number, number, number];
-  opacity: number;
-}
-
-interface StrokeData {
-  color: [number, number, number, number];
-  width: number;
-  opacity: number;
 }
 
 const LAYER_TYPE_LABELS: Record<number, string> = {
@@ -211,6 +196,8 @@ function updateStrokeOpacity(shapes: LottieShape[], opacity: number): LottieShap
   });
 }
 
+// ── Components ──
+
 function Section({
   icon: Icon,
   title,
@@ -224,33 +211,28 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div>
-      <button
-        className="w-full flex items-center gap-2 py-2 px-4 hover:bg-gray-800/40 transition-colors group"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <Icon className="w-3 h-3 text-gray-500 flex-shrink-0" />
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 flex-1 text-left">
-          {title}
-        </span>
-        {open ? (
-          <ChevronDown className="w-3 h-3 text-gray-600" />
-        ) : (
-          <ChevronRight className="w-3 h-3 text-gray-600" />
-        )}
-      </button>
-      {open && <div className="px-4 pb-4 space-y-3">{children}</div>}
+    <S.SectionContainer>
+      <S.SectionButton onClick={() => setOpen((v) => !v)}>
+        <S.SectionIcon>
+          <Icon />
+        </S.SectionIcon>
+        <S.SectionTitle>{title}</S.SectionTitle>
+        <S.ChevronIcon>
+          {open ? <ChevronDown /> : <ChevronRight />}
+        </S.ChevronIcon>
+      </S.SectionButton>
+      {open && <S.SectionContent>{children}</S.SectionContent>}
       <Separator className="bg-gray-800" />
-    </div>
+    </S.SectionContainer>
   );
 }
 
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] text-gray-500 w-16 flex-shrink-0">{label}</span>
-      <div className="flex-1">{children}</div>
-    </div>
+    <S.FieldRowContainer>
+      <S.FieldLabel>{label}</S.FieldLabel>
+      <S.FieldContent>{children}</S.FieldContent>
+    </S.FieldRowContainer>
   );
 }
 
@@ -276,7 +258,7 @@ function NumberInput({
   }, [value]);
 
   return (
-    <div className="relative flex items-center">
+    <S.NumberInputWrapper>
       <Input
         type="number"
         value={local}
@@ -305,10 +287,8 @@ function NumberInput({
         }}
         className="h-7 bg-gray-800 border-gray-700 text-gray-200 text-xs font-mono pr-6"
       />
-      {suffix && (
-        <span className="absolute right-2 text-[10px] text-gray-500 pointer-events-none">{suffix}</span>
-      )}
-    </div>
+      {suffix && <S.NumberInputSuffix>{suffix}</S.NumberInputSuffix>}
+    </S.NumberInputWrapper>
   );
 }
 
@@ -334,9 +314,9 @@ function XYInputs({
   onToggleLink?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex-1">
-        <span className="text-[9px] text-gray-600 block mb-0.5 ml-0.5">{labelX}</span>
+    <S.XYInputsContainer>
+      <S.XYInputGroup>
+        <S.XYInputLabel>{labelX}</S.XYInputLabel>
         <NumberInput
           value={x}
           onChange={(v) => {
@@ -345,22 +325,19 @@ function XYInputs({
           }}
           suffix={suffix}
         />
-      </div>
+      </S.XYInputGroup>
       {onToggleLink && (
-        <button
+        <S.LinkButton
           onClick={onToggleLink}
-          className="mt-4 p-1 hover:bg-gray-700 rounded transition-colors flex-shrink-0"
           title={linked ? 'Unlink X/Y' : 'Link X/Y'}
         >
-          {linked ? (
-            <Link2 className="w-3 h-3 text-blue-400" />
-          ) : (
-            <Unlink2 className="w-3 h-3 text-gray-600" />
-          )}
-        </button>
+          <S.LinkIcon $linked={linked}>
+            {linked ? <Link2 /> : <Unlink2 />}
+          </S.LinkIcon>
+        </S.LinkButton>
       )}
-      <div className="flex-1">
-        <span className="text-[9px] text-gray-600 block mb-0.5 ml-0.5">{labelY}</span>
+      <S.XYInputGroup>
+        <S.XYInputLabel>{labelY}</S.XYInputLabel>
         <NumberInput
           value={y}
           onChange={(v) => {
@@ -369,8 +346,8 @@ function XYInputs({
           }}
           suffix={suffix}
         />
-      </div>
-    </div>
+      </S.XYInputGroup>
+    </S.XYInputsContainer>
   );
 }
 
@@ -394,7 +371,6 @@ export function RightPanel({
   const opacity = getPropValue(transform?.o);
   const fillShape = findFillShape(selectedLayer?.shapes);
   const strokeShape = findStrokeShape(selectedLayer?.shapes);
-  const fillColor = fillShape?.c ? getPropValue(fillShape.c) : null;
   const fillColorArr = fillShape?.c?.a === 0 ? (fillShape.c.k as number[]) : null;
   const fillOpacity = fillShape?.o ? getPropValue(fillShape.o) : 100;
   const strokeColorArr = strokeShape?.c?.a === 0 ? (strokeShape.c.k as number[]) : null;
@@ -421,12 +397,12 @@ export function RightPanel({
 
   if (!selectedLayer || selectedLayerIndex === null) {
     return (
-      <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col items-center justify-center gap-3">
-        <Layers className="w-10 h-10 text-gray-700" />
-        <p className="text-gray-600 text-xs text-center leading-relaxed px-6">
+      <S.EmptyStateContainer>
+        <S.EmptyStateIcon />
+        <S.EmptyStateText>
           Select a layer in the panel to inspect and edit its properties
-        </p>
-      </div>
+        </S.EmptyStateText>
+      </S.EmptyStateContainer>
     );
   }
 
@@ -437,67 +413,67 @@ export function RightPanel({
 
   if (isLocked) {
     return (
-      <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col">
-        <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-white truncate">
+      <S.LockedStateContainer>
+        <S.Header>
+          <S.HeaderContent>
+            <S.HeaderInfo>
+              <S.LayerName>
                 {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
-              </h3>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-gray-500">{layerTypeLabel} Layer</span>
-                <span className="text-[10px] text-gray-600">#{selectedLayer.ind}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+              </S.LayerName>
+              <S.LayerMeta>
+                <S.LayerType>{layerTypeLabel} Layer</S.LayerType>
+                <S.LayerIndex>#{selectedLayer.ind}</S.LayerIndex>
+              </S.LayerMeta>
+            </S.HeaderInfo>
+          </S.HeaderContent>
+        </S.Header>
         
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6">
-          <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <S.LockedStateContent>
+          <S.LockedIconWrapper>
+            <S.LockedIcon fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-medium text-amber-400 mb-1">Layer is Locked</p>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            </S.LockedIcon>
+          </S.LockedIconWrapper>
+          <S.LockedTextContainer>
+            <S.LockedTitle>Layer is Locked</S.LockedTitle>
+            <S.LockedDescription>
               This layer cannot be edited. Click the lock icon in the layer panel to unlock it.
-            </p>
-          </div>
-        </div>
-      </div>
+            </S.LockedDescription>
+          </S.LockedTextContainer>
+        </S.LockedStateContent>
+      </S.LockedStateContainer>
     );
   }
 
   return (
-    <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col h-full overflow-y-auto">
-      <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-white truncate">
+    <S.PanelContainer>
+      <S.Header>
+        <S.HeaderContent>
+          <S.HeaderInfo>
+            <S.LayerName>
               {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
-            </h3>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-gray-500">{layerTypeLabel} Layer</span>
-              <span className="text-[10px] text-gray-600">#{selectedLayer.ind}</span>
+            </S.LayerName>
+            <S.LayerMeta>
+              <S.LayerType>{layerTypeLabel} Layer</S.LayerType>
+              <S.LayerIndex>#{selectedLayer.ind}</S.LayerIndex>
               {selectedLayer.parent !== undefined && (
-                <span className="text-[10px] text-blue-400/70">↳ {selectedLayer.parent}</span>
+                <S.LayerParent>↳ {selectedLayer.parent}</S.LayerParent>
               )}
-            </div>
-          </div>
+            </S.LayerMeta>
+          </S.HeaderInfo>
           {(isAnimated(transform?.p) || isAnimated(transform?.r) || isAnimated(transform?.s)) && (
-            <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 rounded px-1.5 py-0.5 flex-shrink-0">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-[9px] text-amber-400 uppercase tracking-wide">Animated</span>
-            </div>
+            <S.AnimatedBadge>
+              <S.AnimatedDot />
+              <S.AnimatedText>Animated</S.AnimatedText>
+            </S.AnimatedBadge>
           )}
-        </div>
-      </div>
+        </S.HeaderContent>
+      </S.Header>
       <Section icon={Move} title="Transform">
-        <div>
-          <span className="text-[10px] text-gray-600 block mb-1.5">
-            Position {isAnimated(transform?.p) && <span className="text-amber-400 ml-1">◆</span>}
-          </span>
+        <S.PropertyGroup>
+          <S.PropertyLabel>
+            Position {isAnimated(transform?.p) && <S.AnimatedIndicator>◆</S.AnimatedIndicator>}
+          </S.PropertyLabel>
           <XYInputs
             x={posX}
             y={posY}
@@ -505,9 +481,9 @@ export function RightPanel({
             onChangeY={(v) => updateTransform('p', v, 1)}
             suffix="px"
           />
-        </div>
-        <div>
-          <span className="text-[10px] text-gray-600 block mb-1.5">Anchor Point</span>
+        </S.PropertyGroup>
+        <S.PropertyGroup>
+          <S.PropertyLabel>Anchor Point</S.PropertyLabel>
           <XYInputs
             x={anchorX}
             y={anchorY}
@@ -515,11 +491,11 @@ export function RightPanel({
             onChangeY={(v) => updateTransform('a', v, 1)}
             suffix="px"
           />
-        </div>
-        <div>
-          <span className="text-[10px] text-gray-600 block mb-1.5">
-            Scale {isAnimated(transform?.s) && <span className="text-amber-400 ml-1">◆</span>}
-          </span>
+        </S.PropertyGroup>
+        <S.PropertyGroup>
+          <S.PropertyLabel>
+            Scale {isAnimated(transform?.s) && <S.AnimatedIndicator>◆</S.AnimatedIndicator>}
+          </S.PropertyLabel>
           <XYInputs
             x={scaleX}
             y={scaleY}
@@ -529,7 +505,7 @@ export function RightPanel({
             linked={linkedScale}
             onToggleLink={() => setLinkedScale((v) => !v)}
           />
-        </div>
+        </S.PropertyGroup>
         <FieldRow label="Rotation">
           <NumberInput
             value={rotation}
@@ -538,13 +514,13 @@ export function RightPanel({
             step={0.1}
           />
         </FieldRow>
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] text-gray-600">
-              Opacity {isAnimated(transform?.o) && <span className="text-amber-400 ml-1">◆</span>}
-            </span>
-            <span className="text-[10px] font-mono text-gray-400">{Math.round(opacity)}%</span>
-          </div>
+        <S.SliderContainer>
+          <S.SliderHeader>
+            <S.SliderLabel>
+              Opacity {isAnimated(transform?.o) && <S.AnimatedIndicator>◆</S.AnimatedIndicator>}
+            </S.SliderLabel>
+            <S.SliderValue>{Math.round(opacity)}%</S.SliderValue>
+          </S.SliderHeader>
           <Slider
             value={[opacity]}
             onValueChange={([v]) => updateTransform('o', v)}
@@ -553,29 +529,26 @@ export function RightPanel({
             step={1}
             className="w-full"
           />
-        </div>
+        </S.SliderContainer>
       </Section>
       {isShapeLayer && (
         <Section icon={Droplets} title="Fill" defaultOpen={!!fillShape}>
           {fillShape ? (
             <>
-              <div>
-                <span className="text-[10px] text-gray-600 block mb-1.5">Color</span>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <input
-                      type="color"
-                      value={fillColorArr ? lottieColorToHex(fillColorArr) : '#000000'}
-                      onChange={(e) => {
-                        const lottieColor = hexToLottieColor(e.target.value);
-                        if (selectedLayer?.shapes) {
-                          const updatedShapes = updateFillColor(selectedLayer.shapes, lottieColor);
-                          updateLayerProp('shapes', updatedShapes);
-                        }
-                      }}
-                      className="w-8 h-7 bg-transparent border border-gray-700 rounded cursor-pointer overflow-hidden"
-                    />
-                  </div>
+              <S.PropertyGroup>
+                <S.PropertyLabel>Color</S.PropertyLabel>
+                <S.ColorInputContainer>
+                  <S.ColorPicker
+                    type="color"
+                    value={fillColorArr ? lottieColorToHex(fillColorArr) : '#000000'}
+                    onChange={(e) => {
+                      const lottieColor = hexToLottieColor(e.target.value);
+                      if (selectedLayer?.shapes) {
+                        const updatedShapes = updateFillColor(selectedLayer.shapes, lottieColor);
+                        updateLayerProp('shapes', updatedShapes);
+                      }
+                    }}
+                  />
                   <Input
                     type="text"
                     value={fillColorArr ? lottieColorToHex(fillColorArr) : '#000000'}
@@ -590,13 +563,13 @@ export function RightPanel({
                     }}
                     className="flex-1 h-7 bg-gray-800 border-gray-700 text-gray-300 text-xs font-mono"
                   />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[10px] text-gray-600">Opacity</span>
-                  <span className="text-[10px] font-mono text-gray-400">{Math.round(fillOpacity)}%</span>
-                </div>
+                </S.ColorInputContainer>
+              </S.PropertyGroup>
+              <S.SliderContainer>
+                <S.SliderHeader>
+                  <S.SliderLabel>Opacity</S.SliderLabel>
+                  <S.SliderValue>{Math.round(fillOpacity)}%</S.SliderValue>
+                </S.SliderHeader>
                 <Slider
                   value={[fillOpacity]}
                   onValueChange={([v]) => {
@@ -610,10 +583,10 @@ export function RightPanel({
                   step={1}
                   className="w-full"
                 />
-              </div>
+              </S.SliderContainer>
             </>
           ) : (
-            <p className="text-[11px] text-gray-600 italic">No fill found in this layer</p>
+            <S.EmptyMessage>No fill found in this layer</S.EmptyMessage>
           )}
         </Section>
       )}
@@ -621,10 +594,10 @@ export function RightPanel({
         <Section icon={PenLine} title="Stroke" defaultOpen={!!strokeShape}>
           {strokeShape ? (
             <>
-              <div>
-                <span className="text-[10px] text-gray-600 block mb-1.5">Color</span>
-                <div className="flex items-center gap-2">
-                  <input
+              <S.PropertyGroup>
+                <S.PropertyLabel>Color</S.PropertyLabel>
+                <S.ColorInputContainer>
+                  <S.ColorPicker
                     type="color"
                     value={strokeColorArr ? lottieColorToHex(strokeColorArr) : '#ffffff'}
                     onChange={(e) => {
@@ -634,7 +607,6 @@ export function RightPanel({
                         updateLayerProp('shapes', updatedShapes);
                       }
                     }}
-                    className="w-8 h-7 bg-transparent border border-gray-700 rounded cursor-pointer"
                   />
                   <Input
                     type="text"
@@ -650,13 +622,13 @@ export function RightPanel({
                     }}
                     className="flex-1 h-7 bg-gray-800 border-gray-700 text-gray-300 text-xs font-mono"
                   />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[10px] text-gray-600">Width</span>
-                  <span className="text-[10px] font-mono text-gray-400">{strokeWidth}px</span>
-                </div>
+                </S.ColorInputContainer>
+              </S.PropertyGroup>
+              <S.SliderContainer>
+                <S.SliderHeader>
+                  <S.SliderLabel>Width</S.SliderLabel>
+                  <S.SliderValue>{strokeWidth}px</S.SliderValue>
+                </S.SliderHeader>
                 <Slider
                   value={[strokeWidth]}
                   onValueChange={([v]) => {
@@ -670,12 +642,12 @@ export function RightPanel({
                   step={0.5}
                   className="w-full"
                 />
-              </div>
-              <div>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[10px] text-gray-600">Opacity</span>
-                  <span className="text-[10px] font-mono text-gray-400">{Math.round(strokeOpacity)}%</span>
-                </div>
+              </S.SliderContainer>
+              <S.SliderContainer>
+                <S.SliderHeader>
+                  <S.SliderLabel>Opacity</S.SliderLabel>
+                  <S.SliderValue>{Math.round(strokeOpacity)}%</S.SliderValue>
+                </S.SliderHeader>
                 <Slider
                   value={[strokeOpacity]}
                   onValueChange={([v]) => {
@@ -689,87 +661,86 @@ export function RightPanel({
                   step={1}
                   className="w-full"
                 />
-              </div>
+              </S.SliderContainer>
             </>
           ) : (
-            <p className="text-[11px] text-gray-600 italic">No stroke found in this layer</p>
+            <S.EmptyMessage>No stroke found in this layer</S.EmptyMessage>
           )}
         </Section>
       )}
       <Section icon={Blend} title="Blending" defaultOpen={false}>
         <FieldRow label="Mode">
-          <select
+          <S.BlendSelect
             value={selectedLayer.bm ?? 0}
             onChange={(e) => updateLayerProp('bm', parseInt(e.target.value))}
-            className="w-full h-7 bg-gray-800 border border-gray-700 rounded text-gray-300 text-xs px-2 cursor-pointer"
           >
             {Object.entries(BLEND_MODES).map(([val, label]) => (
               <option key={val} value={val}>
                 {label}
               </option>
             ))}
-          </select>
+          </S.BlendSelect>
         </FieldRow>
       </Section>
       <Section icon={Clock} title="Timing" defaultOpen={false}>
-        <div className="space-y-2">
+        <S.InfoRowsContainer>
           <FieldRow label="In Point">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-gray-300">{selectedLayer.ip}</span>
-              <span className="text-[10px] text-gray-600">
+            <S.TimingInfo>
+              <S.TimingValue>{selectedLayer.ip}</S.TimingValue>
+              <S.TimingUnit>
                 f ({animation ? (selectedLayer.ip / animation.fr).toFixed(2) : '—'}s)
-              </span>
-            </div>
+              </S.TimingUnit>
+            </S.TimingInfo>
           </FieldRow>
           <FieldRow label="Out Point">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-gray-300">{selectedLayer.op}</span>
-              <span className="text-[10px] text-gray-600">
+            <S.TimingInfo>
+              <S.TimingValue>{selectedLayer.op}</S.TimingValue>
+              <S.TimingUnit>
                 f ({animation ? (selectedLayer.op / animation.fr).toFixed(2) : '—'}s)
-              </span>
-            </div>
+              </S.TimingUnit>
+            </S.TimingInfo>
           </FieldRow>
           <FieldRow label="Start">
-            <span className="text-xs font-mono text-gray-300">{selectedLayer.st}</span>
+            <S.InfoValue>{selectedLayer.st}</S.InfoValue>
           </FieldRow>
           <FieldRow label="Duration">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-gray-300">
+            <S.TimingInfo>
+              <S.TimingValue>
                 {selectedLayer.op - selectedLayer.ip}
-              </span>
-              <span className="text-[10px] text-gray-600">frames</span>
-            </div>
+              </S.TimingValue>
+              <S.TimingUnit>frames</S.TimingUnit>
+            </S.TimingInfo>
           </FieldRow>
-        </div>
+        </S.InfoRowsContainer>
       </Section>
       <Section icon={Info} title="Layer Info" defaultOpen={false}>
-        <div className="space-y-2">
+        <S.InfoRowsContainer>
           <FieldRow label="Index">
-            <span className="text-xs font-mono text-gray-300">{selectedLayer.ind}</span>
+            <S.InfoValue>{selectedLayer.ind}</S.InfoValue>
           </FieldRow>
           {selectedLayer.parent !== undefined && (
             <FieldRow label="Parent">
-              <span className="text-xs font-mono text-blue-400">{selectedLayer.parent}</span>
+              <S.InfoValueHighlight>{selectedLayer.parent}</S.InfoValueHighlight>
             </FieldRow>
           )}
           <FieldRow label="3D">
-            <span className="text-xs font-mono text-gray-300">
+            <S.InfoValue>
               {selectedLayer.ddd === 1 ? 'Yes' : 'No'}
-            </span>
+            </S.InfoValue>
           </FieldRow>
           <FieldRow label="Shapes">
-            <span className="text-xs font-mono text-gray-300">
+            <S.InfoValue>
               {selectedLayer.shapes?.length ?? 0}
-            </span>
+            </S.InfoValue>
           </FieldRow>
           {selectedLayer.sr !== undefined && selectedLayer.sr !== 1 && (
             <FieldRow label="Stretch">
-              <span className="text-xs font-mono text-amber-400">{selectedLayer.sr}x</span>
+              <S.InfoValueWarning>{selectedLayer.sr}x</S.InfoValueWarning>
             </FieldRow>
           )}
-        </div>
+        </S.InfoRowsContainer>
       </Section>
-      <div className="flex-1 min-h-4" />
-    </div>
+      <S.Spacer />
+    </S.PanelContainer>
   );
 }

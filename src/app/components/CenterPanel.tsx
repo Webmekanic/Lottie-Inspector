@@ -1,12 +1,12 @@
 import { Play, Pause, ZoomIn, ZoomOut, Repeat } from 'lucide-react';
-import { Button } from './ui/button';
 import { Slider } from './ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Select, SelectItem, SelectValue } from './ui/select';
 import { useEffect, useRef } from 'react';
 import lottie, { AnimationItem } from 'lottie-web';
 import { LottieAnimation, RenderMode } from '../../types/lottie';
 import { useUIStore } from '../../stores/uiStore';
 import { usePlaybackTicker } from '../../hooks/usePlaybackTicker';
+import * as S from '../../styles/CenterPanelStyles';
 
 interface CenterPanelProps {
   animation: LottieAnimation | null;
@@ -45,7 +45,6 @@ export function CenterPanel({
   const lastFrameTimeRef = useRef<number>(Date.now());
   const frameCountRef = useRef<number>(0);
 
-  // Use playback ticker hook to sync frames during playback
   usePlaybackTicker({
     animationRef,
     isPlaying,
@@ -71,7 +70,6 @@ export function CenterPanel({
 
       animationRef.current.goToAndStop(currentFrame, true);
 
-      // Calculate FPS
       const handleFPSFrame = () => {
         frameCountRef.current++;
         const now = Date.now();
@@ -146,121 +144,95 @@ export function CenterPanel({
   const scaledHeight = (animationHeight * zoomLevel) / 100;
 
   return (
-    <div className="flex-1 bg-gray-950 flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
+    <S.PanelContainer>
+      <S.ViewportArea>
         {!animation ? (
-          <div className="text-gray-500 text-center">
-            <p className="text-lg mb-2">No animation loaded</p>
-            <p className="text-sm">Upload a Lottie JSON file to get started</p>
-          </div>
+          <S.EmptyState>
+            <S.EmptyTitle>No animation loaded</S.EmptyTitle>
+            <S.EmptySubtitle>Upload a Lottie JSON file to get started</S.EmptySubtitle>
+          </S.EmptyState>
         ) : (
-          <div 
-            className="relative rounded-lg border border-gray-800 shadow-2xl overflow-hidden"
-            style={{ 
-              width: `${scaledWidth}px`, 
-              height: `${scaledHeight}px`,
-              backgroundImage: `
-                linear-gradient(45deg, #1f2937 25%, transparent 25%),
-                linear-gradient(-45deg, #1f2937 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #1f2937 75%),
-                linear-gradient(-45deg, transparent 75%, #1f2937 75%)
-              `,
-              backgroundSize: '20px 20px',
-              backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
-            }}
-          >
-            <div 
-              ref={containerRef} 
-              className="absolute inset-0"
-              style={{ 
-                width: '100%', 
-                height: '100%' 
-              }}
-            />
+          <S.CanvasWrapper $width={scaledWidth} $height={scaledHeight}>
+            <S.LottieContainer ref={containerRef} />
             {selectedLayerIndex !== null && (
-              <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none">
-                <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-500 rounded-full" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
-                <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-500 rounded-full" />
-                <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" />
-              </div>
+              <S.SelectionOverlay>
+                <S.SelectionCorner $position="tl" />
+                <S.SelectionCorner $position="tr" />
+                <S.SelectionCorner $position="bl" />
+                <S.SelectionCorner $position="br" />
+              </S.SelectionOverlay>
             )}
-          </div>
+          </S.CanvasWrapper>
         )}
-      </div>
-      <div className="bg-gray-900 border-t border-gray-800 p-4">
-        <div className="flex items-center gap-4 max-w-4xl mx-auto">
-          <Button
-            size="sm"
+      </S.ViewportArea>
+      <S.ControlsBar>
+        <S.ControlsInner>
+          <S.ControlButton
+            $variant="primary"
             onClick={onPlayPause}
             disabled={!animation}
-            className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+            $disabled={!animation}
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          </Button>
-          <span className="text-xs text-gray-400 font-mono min-w-[100px]">
+            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          </S.ControlButton>
+          <S.FrameCounter>
             Frame {currentFrame} / {totalFrames}
-          </span>
-          <div className="flex-1">
+          </S.FrameCounter>
+          <S.SliderWrapper>
             <Slider
               value={[currentFrame]}
               onValueChange={(value) => onFrameChange(value[0])}
               max={totalFrames}
               step={1}
               disabled={!animation}
-              className="w-full"
             />
-          </div>
+          </S.SliderWrapper>
           <Select 
             value={speed.toString()} 
             onValueChange={(value) => onSpeedChange(parseFloat(value))}
             disabled={!animation}
           >
-            <SelectTrigger className="w-[80px] h-8 bg-gray-800 border-gray-700 text-gray-300">
+            <S.StyledSelectTrigger>
               <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
+            </S.StyledSelectTrigger>
+            <S.StyledSelectContent>
               <SelectItem value="0.25">0.25x</SelectItem>
               <SelectItem value="0.5">0.5x</SelectItem>
               <SelectItem value="1">1x</SelectItem>
               <SelectItem value="1.5">1.5x</SelectItem>
               <SelectItem value="2">2x</SelectItem>
-            </SelectContent>
+            </S.StyledSelectContent>
           </Select>
-          <Button
-            size="sm"
-            variant={loop ? 'default' : 'outline'}
+          <S.ControlButton
+            $variant="outline"
+            $active={loop}
             onClick={onLoopToggle}
             disabled={!animation}
-            className={loop ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white'}
+            $disabled={!animation}
           >
-            <Repeat className="w-4 h-4" />
-          </Button>
-          <div className="flex items-center gap-2 border-l border-gray-700 pl-4">
-            <Button
-              size="sm"
-              variant="ghost"
+            <Repeat size={16} />
+          </S.ControlButton>
+          <S.Divider>
+            <S.ControlButton
+              $variant="ghost"
               onClick={zoomOut}
               disabled={!animation}
-              className="text-gray-400 hover:text-white hover:bg-gray-800"
+              $disabled={!animation}
             >
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <span className="text-xs text-gray-400 font-mono min-w-[45px] text-center">
-              {zoomLevel}%
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
+              <ZoomOut size={16} />
+            </S.ControlButton>
+            <S.ZoomLabel>{zoomLevel}%</S.ZoomLabel>
+            <S.ControlButton
+              $variant="ghost"
               onClick={zoomIn}
               disabled={!animation}
-              className="text-gray-400 hover:text-white hover:bg-gray-800"
+              $disabled={!animation}
             >
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+              <ZoomIn size={16} />
+            </S.ControlButton>
+          </S.Divider>
+        </S.ControlsInner>
+      </S.ControlsBar>
+    </S.PanelContainer>
   );
 }
