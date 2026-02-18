@@ -2,51 +2,49 @@ import styled from 'styled-components';
 import { Search } from 'lucide-react';
 
 export const PanelContainer = styled.div`
-  width: 280px;
+  width: 300px;
   background-color: ${({ theme }) => theme.colors.gray900};
   border-right: 1px solid ${({ theme }) => theme.colors.gray800};
   display: flex;
   flex-direction: column;
   height: 100%;
-  user-select: none;
+  overflow: hidden;
 `;
 
 export const Header = styled.div`
-  padding: ${({ theme }) => `${theme.spacing[3]} ${theme.spacing[3]} ${theme.spacing[2]}`};
+  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
   border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[2]};
+  flex-shrink: 0;
 `;
 
 export const HeaderRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacing[3]};
 `;
 
-export const SectionTitle = styled.span`
-  font-size: 11px;
+export const SectionTitle = styled.h2`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${({ theme }) => theme.colors.gray500};
+  color: ${({ theme }) => theme.colors.gray100};
 `;
 
 export const Stats = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray600};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.gray500};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
 `;
 
 export const SearchContainer = styled.div`
   position: relative;
+  display: flex;
+  align-items: center;
 `;
 
 export const SearchIcon = styled(Search)`
   position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: ${({ theme }) => theme.spacing[3]};
   width: 14px;
   height: 14px;
   color: ${({ theme }) => theme.colors.gray500};
@@ -55,21 +53,23 @@ export const SearchIcon = styled(Search)`
 
 export const SearchInput = styled.input`
   width: 100%;
-  padding: ${({ theme }) => `${theme.spacing[1.5]} ${theme.spacing[2]} ${theme.spacing[1.5]} ${theme.spacing[8]}`};
+  height: ${({ theme }) => theme.spacing[8]};
+  padding: 0 ${({ theme }) => theme.spacing[3]} 0 ${({ theme }) => theme.spacing[9]};
   background-color: ${({ theme }) => theme.colors.gray800};
   border: 1px solid ${({ theme }) => theme.colors.gray700};
-  color: ${({ theme }) => theme.colors.gray300};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  height: 28px;
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  color: ${({ theme }) => theme.colors.gray100};
+  outline: none;
+  transition: all ${({ theme }) => theme.transitions.DEFAULT};
 
   &::placeholder {
-    color: ${({ theme }) => theme.colors.gray600};
+    color: ${({ theme }) => theme.colors.gray500};
   }
 
   &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.blue500};
-    outline-offset: 0;
+    border-color: ${({ theme }) => theme.colors.blue500};
+    background-color: ${({ theme }) => theme.colors.gray900};
   }
 `;
 
@@ -77,14 +77,15 @@ export const CompositionInfo = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing[2]};
-  padding: ${({ theme }) => `${theme.spacing[1.5]} ${theme.spacing[3]}`};
-  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
+  background-color: ${({ theme }) => theme.colors.gray800}40;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
 `;
 
 export const CompositionName = styled.span`
-  font-size: 11px;
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-  color: ${({ theme }) => theme.colors.gray500};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.gray300};
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -92,10 +93,9 @@ export const CompositionName = styled.span`
 `;
 
 export const CompositionMeta = styled.span`
-  font-size: 9px;
-  color: ${({ theme }) => theme.colors.gray600};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.gray500};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
 `;
 
 export const LayersContainer = styled.div`
@@ -110,88 +110,136 @@ export const EmptyState = styled.div`
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: ${({ theme }) => theme.spacing[2]};
-  color: ${({ theme }) => theme.colors.gray600};
+  gap: ${({ theme }) => theme.spacing[3]};
+  padding: ${({ theme }) => theme.spacing[8]} ${({ theme }) => theme.spacing[4]};
 `;
 
-export const EmptyText = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+export const EmptyText = styled.p`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  color: ${({ theme }) => theme.colors.gray500};
+  text-align: center;
 `;
 
 export const LayerList = styled.div`
-  padding: ${({ theme }) => theme.spacing[1]} 0;
+  display: flex;
+  flex-direction: column;
 `;
 
-export const LayerRowContainer = styled.div<{ $isSelected: boolean; $isVisible: boolean; $isLocked: boolean }>`
+interface LayerRowContainerProps {
+  $isSelected: boolean;
+  $isVisible: boolean;
+  $isLocked: boolean;
+}
+
+export const LayerRowContainer = styled.div<LayerRowContainerProps>`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 0 6px 10px;
-  border-left: 2px solid ${({ $isSelected, theme }) => 
-    $isSelected ? theme.colors.blue500 : 'transparent'};
-  background-color: ${({ $isSelected }) => 
-    $isSelected ? 'rgba(59, 130, 246, 0.15)' : 'transparent'};
-  opacity: ${({ $isVisible }) => $isVisible ? 1 : 0.4};
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => theme.spacing[1.5]} ${({ theme }) => theme.spacing[3]};
   cursor: ${({ $isLocked }) => $isLocked ? 'not-allowed' : 'pointer'};
+  background-color: ${({ $isSelected, theme }) => 
+    $isSelected ? `${theme.colors.blue500}14` : 'transparent'};
+  border-left: 2px solid ${({ $isSelected, theme }) =>
+    $isSelected ? theme.colors.blue500 : 'transparent'};
+  opacity: ${({ $isVisible }) => $isVisible ? 1 : 0.5};
   transition: background-color ${({ theme }) => theme.transitions.DEFAULT};
 
   &:hover {
-    background-color: ${({ $isSelected }) => 
-      $isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(39, 39, 42, 0.6)'};
+    background-color: ${({ $isSelected, $isLocked, theme }) =>
+      $isLocked ? 'transparent' : $isSelected ? `${theme.colors.blue500}1A` : theme.colors.gray800};
   }
 `;
 
 export const ExpandButton = styled.button`
-  padding: 2px;
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
   flex-shrink: 0;
-  transition: background-color ${({ theme }) => theme.transitions.fast};
+  color: ${({ theme }) => theme.colors.gray400};
+  transition: all ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.gray700};
+    color: ${({ theme }) => theme.colors.gray300};
   }
 `;
 
 export const ExpandSpacer = styled.div`
   width: 16px;
+  height: 16px;
   flex-shrink: 0;
 `;
 
-export const LayerName = styled.span<{ $isSelected: boolean }>`
+export const StyledIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+interface LayerNameProps {
+  $isSelected: boolean;
+}
+
+export const LayerName = styled.span<LayerNameProps>`
   font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
   color: ${({ $isSelected, theme }) => $isSelected ? theme.colors.blue400 : theme.colors.gray300};
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
 `;
 
-export const LayerTypeLabel = styled.span<{ $color: string }>`
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
+interface LayerTypeLabelProps {
+  $color: string;
+}
+
+export const LayerTypeLabel = styled.span<LayerTypeLabelProps>`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
   color: ${({ $color }) => $color};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  padding: 2px ${({ theme }) => theme.spacing[1.5]};
+  background-color: ${({ $color }) => `${$color}14`};
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  flex-shrink: 0;
 `;
 
 export const IconButtonGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 2px;
-  margin-left: ${({ theme }) => theme.spacing[1]};
-  flex-shrink: 0;
-`;
+  gap: ${({ theme }) => theme.spacing[1]};
+  opacity: 0;
+  transition: opacity ${({ theme }) => theme.transitions.fast};
 
-export const IconButton = styled.button<{ $visible?: boolean }>`
-  padding: 2px;
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
-  transition: all ${({ theme }) => theme.transitions.DEFAULT};
-  opacity: ${({ $visible }) => $visible ? 1 : 0};
-
-  .group:hover & {
+  ${LayerRowContainer}:hover & {
     opacity: 1;
   }
+`;
+
+interface IconButtonProps {
+  $visible?: boolean;
+}
+
+export const IconButton = styled.button<IconButtonProps>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  opacity: ${({ $visible }) => $visible ? 1 : 0.6};
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.gray700};
@@ -199,30 +247,32 @@ export const IconButton = styled.button<{ $visible?: boolean }>`
 `;
 
 export const ShapeTreeBorder = styled.div`
-  border-left: 1px solid rgba(63, 63, 70, 0.6);
-  margin-left: 22px;
+  border-left: 1px solid ${({ theme }) => theme.colors.gray800};
+  margin-left: ${({ theme }) => theme.spacing[6]};
 `;
 
-export const ShapeNodeContainer = styled.div<{ $depth: number }>`
+interface ShapeNodeContainerProps {
+  $depth: number;
+}
+
+export const ShapeNodeContainer = styled.div<ShapeNodeContainerProps>`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
-  padding-left: ${({ $depth }) => $depth * 14 + 12}px;
+  gap: ${({ theme }) => theme.spacing[1.5]};
+  padding: ${({ theme }) => theme.spacing[1]} ${({ theme }) => theme.spacing[2]};
+  padding-left: ${({ $depth, theme }) => `calc(${$depth} * ${theme.spacing[4]})`};
   font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  color: ${({ theme }) => theme.colors.gray500};
-  cursor: default;
-  user-select: none;
-  transition: all ${({ theme }) => theme.transitions.DEFAULT};
+  color: ${({ theme }) => theme.colors.gray400};
+  transition: background-color ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    color: ${({ theme }) => theme.colors.gray300};
-    background-color: rgba(39, 39, 42, 0.4);
+    background-color: ${({ theme }) => theme.colors.gray800}40;
   }
 `;
 
 export const ShapeNodeSpacer = styled.div`
-  width: 16px;
+  width: 10px;
+  height: 10px;
   flex-shrink: 0;
 `;
 
@@ -231,22 +281,21 @@ export const ShapeNodeName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  color: ${({ theme }) => theme.colors.gray300};
 `;
 
 export const ShapeNodeType = styled.span`
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
   color: ${({ theme }) => theme.colors.gray600};
-  margin-right: ${({ theme }) => theme.spacing[2]};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
   flex-shrink: 0;
 `;
 
 export const SelectedLayerFooter = styled.div`
   border-top: 1px solid ${({ theme }) => theme.colors.gray800};
-  padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
-  background-color: rgba(24, 24, 27, 0.8);
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
+  background-color: ${({ theme }) => theme.colors.gray900};
+  flex-shrink: 0;
 `;
 
 export const FooterContent = styled.div`
@@ -256,9 +305,8 @@ export const FooterContent = styled.div`
 `;
 
 export const FooterLayerName = styled.span`
-  font-size: 11px;
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
   color: ${({ theme }) => theme.colors.gray400};
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -266,70 +314,58 @@ export const FooterLayerName = styled.span`
 `;
 
 export const FooterIndex = styled.span`
-  font-size: 9px;
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
   color: ${({ theme }) => theme.colors.gray600};
-  text-transform: uppercase;
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
 `;
 
-export const StyledIconWrapper = styled.div`
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-// Tab styles
 export const TabsContainer = styled.div`
   display: flex;
   border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
+  background-color: ${({ theme }) => theme.colors.gray900};
   flex-shrink: 0;
 `;
 
-export const TabButton = styled.button<{ $active?: boolean }>`
+interface TabButtonProps {
+  $active: boolean;
+}
+
+export const TabButton = styled.button<TabButtonProps>`
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: ${({ theme }) => theme.spacing[2]};
-  padding: ${({ theme }) => `${theme.spacing[2.5]} 0`};
-  font-size: 11px;
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all ${({ theme }) => theme.transitions.DEFAULT};
-  position: relative;
+  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
   background: none;
   border: none;
-  cursor: pointer;
-  color: ${({ theme, $active }) => 
+  border-bottom: 2px solid ${({ $active, theme }) =>
+    $active ? theme.colors.blue400 : 'transparent'};
+  color: ${({ $active, theme }) =>
     $active ? theme.colors.blue400 : theme.colors.gray500};
-  border-bottom: 2px solid ${({ theme, $active }) => 
-    $active ? theme.colors.blue500 : 'transparent'};
-  background-color: ${({ theme, $active }) => 
-    $active ? `${theme.colors.gray800}40` : 'transparent'};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.DEFAULT};
 
-  &:hover {
-    color: ${({ theme, $active }) => 
-      $active ? theme.colors.blue400 : theme.colors.gray400};
-    background-color: ${({ theme }) => `${theme.colors.gray800}20`};
+  & svg {
+    width: 16px;
+    height: 16px;
   }
 
-  svg {
-    width: 14px;
-    height: 14px;
+  &:hover {
+    color: ${({ $active, theme }) =>
+      $active ? theme.colors.blue400 : theme.colors.gray400};
+    background-color: ${({ theme }) => theme.colors.gray800}40;
   }
 `;
 
 export const TabBadge = styled.span`
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  padding: ${({ theme }) => `${theme.spacing[0.5]} ${theme.spacing[1]}`};
+  padding: 2px ${({ theme }) => theme.spacing[1.5]};
   background-color: ${({ theme }) => theme.colors.blue500};
-  color: ${({ theme }) => theme.colors.white};
-  font-size: 8px;
   border-radius: ${({ theme }) => theme.borderRadius.sm};
+  font-size: 9px;
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  color: ${({ theme }) => theme.colors.white};
+  line-height: 1;
 `;

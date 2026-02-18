@@ -1,46 +1,52 @@
+// Base colors
+const baseColors = {
+  // Blues
+  blue400: '#60a5fa',
+  blue500: '#3b82f6',
+  blue600: '#2563eb',
+  
+  // Greens
+  green400: '#4ade80',
+  green500: '#22c55e',
+  
+  // Reds
+  red400: '#f87171',
+  red500: '#ef4444',
+  red600: '#dc2626',
+  
+  // Amber/Yellow
+  amber400: '#fbbf24',
+  amber500: '#f59e0b',
+  
+  // Purples
+  purple400: '#c084fc',
+  purple500: '#a855f7',
+  
+  // Basic
+  white: '#ffffff',
+  black: '#000000',
+  transparent: 'transparent',
+};
+
+// Dark theme colors
+const colors = {
+  ...baseColors,
+  
+  // Gray scale
+  gray100: '#f4f4f5',
+  gray200: '#e4e4e7',
+  gray300: '#d4d4d8',
+  gray400: '#a1a1aa',
+  gray500: '#71717a',
+  gray600: '#52525b',
+  gray700: '#3f3f46',
+  gray800: '#27272a',
+  gray900: '#18181b',
+  gray950: '#0a0a0d',
+};
+
 export const theme = {
-  colors: {
-    // Grayscale
-    gray950: '#0a0a0d',
-    gray900: '#18181b',
-    gray800: '#27272a',
-    gray700: '#3f3f46',
-    gray600: '#52525b',
-    gray500: '#71717a',
-    gray400: '#a1a1aa',
-    gray300: '#d4d4d8',
-    gray200: '#e4e4e7',
-    gray100: '#f4f4f5',
-    
-    // Primary colors
-    white: '#ffffff',
-    black: '#000000',
-    
-    // Blue
-    blue400: '#60a5fa',
-    blue500: '#3b82f6',
-    blue600: '#2563eb',
-    
-    // Green
-    green400: '#4ade80',
-    green500: '#22c55e',
-    
-    // Red
-    red400: '#f87171',
-    red500: '#ef4444',
-    red600: '#dc2626',
-    
-    // Amber/Yellow
-    amber400: '#fbbf24',
-    amber500: '#f59e0b',
-    
-    // Purple
-    purple400: '#c084fc',
-    purple500: '#a855f7',
-    
-    // Transparency levels
-    transparent: 'transparent',
-  },
+  colors,
   
   typography: {
     fontFamily: {
@@ -48,12 +54,12 @@ export const theme = {
       sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
     fontSize: {
-      xs: '0.75rem',      // 12px
-      sm: '0.875rem',     // 14px
-      base: '1rem',       // 16px
-      lg: '1.125rem',     // 18px
-      xl: '1.25rem',      // 20px
-      '2xl': '1.5rem',    // 24px
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
     },
     fontWeight: {
       normal: 400,
@@ -66,32 +72,32 @@ export const theme = {
   spacing: {
     px: '1px',
     0: '0',
-    0.5: '0.125rem',    // 2px
-    1: '0.25rem',       // 4px
-    1.5: '0.375rem',    // 6px
-    2: '0.5rem',        // 8px
-    2.5: '0.625rem',    // 10px
-    3: '0.75rem',       // 12px
-    4: '1rem',          // 16px
-    5: '1.25rem',       // 20px
-    6: '1.5rem',        // 24px
-    7: '1.75rem',       // 28px
-    8: '2rem',          // 32px
-    9: '2.25rem',       // 36px
-    10: '2.5rem',       // 40px
-    12: '3rem',         // 48px
-    16: '4rem',         // 64px
-    20: '5rem',         // 80px
+    0.5: '0.125rem',
+    1: '0.25rem',
+    1.5: '0.375rem',
+    2: '0.5rem',
+    2.5: '0.625rem',
+    3: '0.75rem',
+    4: '1rem',
+    5: '1.25rem', 
+    6: '1.5rem',
+    7: '1.75rem',
+    8: '2rem',
+    9: '2.25rem',
+    10: '2.5rem',
+    12: '3rem',
+    16: '4rem',
+    20: '5rem',
   },
   
   borderRadius: {
     none: '0',
-    sm: '0.125rem',     // 2px
-    DEFAULT: '0.25rem', // 4px
-    md: '0.375rem',     // 6px
-    lg: '0.5rem',       // 8px
-    xl: '0.75rem',      // 12px
-    '2xl': '1rem',      // 16px
+    sm: '0.125rem', 
+    DEFAULT: '0.25rem',
+    md: '0.375rem',
+    lg: '0.5rem', 
+    xl: '0.75rem',
+    '2xl': '1rem',
     full: '9999px',
   },
   

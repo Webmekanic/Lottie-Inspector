@@ -66,20 +66,60 @@ function getPropValue(prop: any, index?: number): number {
 
 /** Build an updated animated property preserving animation flag */
 function buildUpdatedProp(existing: any, newValue: number, index?: number): any {
-  if (!existing) return { a: 0, k: index !== undefined ? [0, 0] : newValue };
-  if (existing.a === 0) {
+  if (!existing) {
+    // If property doesn't exist, create it with proper defaults
     if (index !== undefined) {
-      const arr = Array.isArray(existing.k) ? [...existing.k] : [0, 0];
+      const arr = [100, 100, 100]; // Default for position/scale/anchor
+      arr[index] = newValue;
+      return { a: 0, k: arr };
+    }
+    return { a: 0, k: newValue };
+  }
+  
+  if (existing.a === 0) {
+    // Non-animated property
+    if (index !== undefined) {
+      // Preserve existing array structure or use proper defaults
+      let arr: number[];
+      if (Array.isArray(existing.k)) {
+        arr = [...existing.k];
+        // Ensure array has at least 3 elements for proper structure
+        while (arr.length < 3) {
+          arr.push(100);
+        }
+      } else {
+        // Default for multi-value properties (position, scale, anchor)
+        arr = [100, 100, 100];
+      }
       arr[index] = newValue;
       return { ...existing, k: arr };
     }
     return { ...existing, k: newValue };
   }
+  
   // Animated — update start value of first keyframe only (non-destructive)
+  if (!existing.k || !Array.isArray(existing.k) || existing.k.length === 0) {
+    // Invalid or missing keyframes, create a proper default
+    const defaultValue = index !== undefined ? [100, 100, 100] : [newValue];
+    if (index !== undefined) {
+      defaultValue[index] = newValue;
+    }
+    return { ...existing, k: [{ t: 0, s: defaultValue }] };
+  }
+  
   const keyframes = JSON.parse(JSON.stringify(existing.k));
   if (keyframes[0]) {
     if (index !== undefined) {
-      keyframes[0].s = [...(keyframes[0].s || [0, 0])];
+      // Preserve existing array or use proper defaults
+      if (Array.isArray(keyframes[0].s)) {
+        keyframes[0].s = [...keyframes[0].s];
+        // Ensure array has at least 3 elements
+        while (keyframes[0].s.length < 3) {
+          keyframes[0].s.push(100);
+        }
+      } else {
+        keyframes[0].s = [100, 100, 100];
+      }
       keyframes[0].s[index] = newValue;
     } else {
       keyframes[0].s = [newValue];
@@ -418,7 +458,7 @@ export function RightPanel({
           <S.HeaderContent>
             <S.HeaderInfo>
               <S.LayerName>
-                {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
+                {`Layer ${selectedLayer.nm || selectedLayerIndex}`}
               </S.LayerName>
               <S.LayerMeta>
                 <S.LayerType>{layerTypeLabel} Layer</S.LayerType>
@@ -451,7 +491,7 @@ export function RightPanel({
         <S.HeaderContent>
           <S.HeaderInfo>
             <S.LayerName>
-              {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
+              {`Layer ${selectedLayer.nm || selectedLayerIndex}`}
             </S.LayerName>
             <S.LayerMeta>
               <S.LayerType>{layerTypeLabel} Layer</S.LayerType>

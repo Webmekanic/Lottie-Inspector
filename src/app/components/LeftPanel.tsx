@@ -188,7 +188,7 @@ function LayerRow({
         )}
         <LayerTypeIcon type={layer.ty} />
         <S.LayerName $isSelected={isSelected}>
-          {layer.nm || `Layer ${index}`}
+          {`Layer ${layer.nm || `Layer ${index}`}`}
         </S.LayerName>
         <S.LayerTypeLabel $color={LAYER_TYPE_COLOR_MAP[layer.ty] || '#71717a'}>
           {LAYER_TYPE_LABELS[layer.ty] ?? '?'}
@@ -274,7 +274,10 @@ export function LeftPanel({
     if (!q) return animation.layers.map((layer, index) => ({ layer, index }));
     return animation.layers
       .map((layer, index) => ({ layer, index }))
-      .filter(({ layer }) => layer.nm?.toLowerCase().includes(q));
+      .filter(({ layer, index }) => {
+        const layerName = `Layer ${layer.nm || index + 1}`;
+        return layerName.toLowerCase().includes(q);
+      });
   }, [animation?.layers, searchQuery]);
 
   const stats = useMemo(() => {

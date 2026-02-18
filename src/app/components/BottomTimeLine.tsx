@@ -249,7 +249,7 @@ export function BottomTimeline({
                 >
                   <S.LayerDot color={dot} />
                   <S.LayerName isSelected={sel}>
-                    {layer.nm || `Layer ${idx}`}
+                    {`Layer ${layer.nm || `Layer ${idx}`}`}
                   </S.LayerName>
                   {animated && <S.AnimatedIndicator />}
                 </S.LayerLabelRow>
