@@ -1,6 +1,6 @@
 # 🎨 Lottie Inspector
 
-A powerful web-based tool for inspecting, analyzing, and editing Lottie animations with AI-powered natural language editing capabilities.
+A powerful web-based tool for inspecting, debugging, and editing complex Lottie animations with real-time preview and AI-powered natural language editing capabilities.
 
 ![Lottie Inspector](https://img.shields.io/badge/React-18-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)
@@ -8,35 +8,30 @@ A powerful web-based tool for inspecting, analyzing, and editing Lottie animatio
 ![XState](https://img.shields.io/badge/XState-6.x-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-## ✨ Features
+
+## ✨ Overview
+
+Lottie Inspector is built to provide structural transparency and runtime control over vector-based animations.
+
+It enables engineers and designers to:
+
+- Explore animation layers hierarchically
+- Inspect and edit transform properties in real time
+- Scrub timelines frame-by-frame
+- Analyze animation structure at the JSON level
+- Generate keyframes using natural language (AI-assisted editing)
+
+The goal is to bridge the gap between animation design and production-level debugging.
+
+## 🧠 Features
 
 ### 🔍 Animation Inspector
 - **Layer Browser**: Hierarchical view of all layers in your Lottie animation
 - **Real-time Preview**: Instant visualization of your animations in the center panel
 - **Timeline Control**: Precise frame-by-frame navigation with playback controls
 - **Property Inspector**: Detailed view of layer properties and transformations
-
-### 🤖 AI-Powered Editing
-- **Natural Language Commands**: Edit animations using plain English
-  - "Make it bounce"
-  - "Rotate 360 degrees"
-  - "Move 50 pixels to the right"
-  - "Double the scale"
-  - "Fade out over 2 seconds"
-- **Smart Context Understanding**: AI analyzes your selected layer and current properties
-- **Preview Before Apply**: Review AI-suggested changes before applying them
-- **Keyframe Generation**: Automatically creates animation keyframes from descriptions
-- **Powered by Claude Sonnet 4**: Anthropic's latest AI model for precise Lottie JSON manipulation
-
-### 🎛️ Professional UI
-- **Four-Panel Layout**:
-  - **Left Panel**: Layers browser with search and selection
-  - **Center Panel**: Animation preview with lottie-web renderer
-  - **Right Panel**: Property details and settings
-  - **Bottom Timeline**: Frame-accurate playback controls
-- **Tab Navigation**: Switch between Layers view and AI Chat seamlessly
-- **Dark Theme**: Eye-friendly interface optimized for long editing sessions
-- **Responsive Design**: Works on desktop and large screens
+- **AI Editing**: Natural language → structured Lottie keyframes
+- **State Machine Orchestration**: Predictable animation control using XState
 
 ## 🚀 Quick Start
 
@@ -46,7 +41,7 @@ A powerful web-based tool for inspecting, analyzing, and editing Lottie animatio
 - A Lottie JSON file to inspect
 - (Optional) Anthropic API key for AI editing features
 
-### Installation
+### Development
 
 ```bash
 # Clone the repository
@@ -155,31 +150,6 @@ User Input → Validation → Context Building → Claude API → Response Parsi
 6. XState machine updates animation state
 7. lottie-web re-renders with new keyframes
 
-For detailed AI architecture diagrams, see [DEPLOYMENT.md](DEPLOYMENT.md#how-the-ai-chat-works).
-
-## 🛠️ Development
-
-### Commands
-
-```bash
-# Install dependencies
-npm install
-
-# Start dev server with hot reload
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Run linter
-npm run lint
-
-# Type check
-npm run type-check
-```
 
 ### Environment Setup
 
@@ -191,28 +161,12 @@ npm run type-check
 - Endpoint: `/api/anthropic`
 - Deployed automatically on git push
 
-## 🚢 Deployment
-
-Deploy to Vercel's free tier in 3 steps:
-
-```bash
-# 1. Install Vercel CLI
-npm install -g vercel
-
-# 2. Deploy
-vercel
-
-# 3. Done! Your app is live
-```
-
 **Alternative**: Connect your GitHub repo at [vercel.com/new](https://vercel.com/new) for automatic deployments on every push.
 
 ### Costs
 - **Hosting**: FREE (Vercel Hobby plan)
 - **AI API**: ~$0.01-0.05 per conversation (Anthropic pay-as-you-go)
 - **Total**: $0 hosting + usage-based AI costs
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment instructions.
 
 ## 🤝 Contributing
 
