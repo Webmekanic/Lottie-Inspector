@@ -1,278 +1,8 @@
-import styled from 'styled-components';
-import { Search, ChevronRight, ChevronDown, Eye, EyeOff, Lock, Unlock, Box, Image, Type, Layers, CircleDot, FileCode } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye, EyeOff, Lock, Unlock, Box, Image, Type, Layers, CircleDot, FileCode } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { LottieLayer, LottieAnimation, LottieShape } from '../../types/lottie';
 import { useUIStore } from '../../stores/uiStore';
-
-const PanelContainer = styled.div`
-  width: 280px;
-  background-color: ${({ theme }) => theme.colors.gray900};
-  border-right: 1px solid ${({ theme }) => theme.colors.gray800};
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  user-select: none;
-`;
-
-const Header = styled.div`
-  padding: ${({ theme }) => `${theme.spacing[3]} ${theme.spacing[3]} ${theme.spacing[2]}`};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[2]};
-`;
-
-const HeaderRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const SectionTitle = styled.span`
-  font-size: 11px;
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${({ theme }) => theme.colors.gray500};
-`;
-
-const Stats = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray600};
-`;
-
-const SearchContainer = styled.div`
-  position: relative;
-`;
-
-const SearchIcon = styled(Search)`
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  color: ${({ theme }) => theme.colors.gray500};
-  pointer-events: none;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: ${({ theme }) => `${theme.spacing[1.5]} ${theme.spacing[2]} ${theme.spacing[1.5]} ${theme.spacing[8]}`};
-  background-color: ${({ theme }) => theme.colors.gray800};
-  border: 1px solid ${({ theme }) => theme.colors.gray700};
-  color: ${({ theme }) => theme.colors.gray300};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  height: 28px;
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.gray600};
-  }
-
-  &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.blue500};
-    outline-offset: 0;
-  }
-`;
-
-const CompositionInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  padding: ${({ theme }) => `${theme.spacing[1.5]} ${theme.spacing[3]}`};
-  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
-`;
-
-const CompositionName = styled.span`
-  font-size: 11px;
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-  color: ${({ theme }) => theme.colors.gray500};
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const CompositionMeta = styled.span`
-  font-size: 9px;
-  color: ${({ theme }) => theme.colors.gray600};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
-const LayersContainer = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-`;
-
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: ${({ theme }) => theme.spacing[2]};
-  color: ${({ theme }) => theme.colors.gray600};
-`;
-
-const EmptyText = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-`;
-
-const LayerList = styled.div`
-  padding: ${({ theme }) => theme.spacing[1]} 0;
-`;
-
-const LayerRowContainer = styled.div<{ $isSelected: boolean; $isVisible: boolean; $isLocked: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 0 6px 10px;
-  border-left: 2px solid ${({ $isSelected, theme }) => 
-    $isSelected ? theme.colors.blue500 : 'transparent'};
-  background-color: ${({ $isSelected }) => 
-    $isSelected ? 'rgba(59, 130, 246, 0.15)' : 'transparent'};
-  opacity: ${({ $isVisible }) => $isVisible ? 1 : 0.4};
-  cursor: ${({ $isLocked }) => $isLocked ? 'not-allowed' : 'pointer'};
-  transition: background-color ${({ theme }) => theme.transitions.DEFAULT};
-
-  &:hover {
-    background-color: ${({ $isSelected }) => 
-      $isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(39, 39, 42, 0.6)'};
-  }
-`;
-
-const ExpandButton = styled.button`
-  padding: 2px;
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
-  flex-shrink: 0;
-  transition: background-color ${({ theme }) => theme.transitions.fast};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.gray700};
-  }
-`;
-
-const ExpandSpacer = styled.div`
-  width: 16px;
-  flex-shrink: 0;
-`;
-
-const LayerName = styled.span<{ $isSelected: boolean }>`
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-  color: ${({ $isSelected, theme }) => $isSelected ? theme.colors.blue400 : theme.colors.gray300};
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const LayerTypeLabel = styled.span<{ $color: string }>`
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-  color: ${({ $color }) => $color};
-`;
-
-const IconButtonGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: ${({ theme }) => theme.spacing[1]};
-  flex-shrink: 0;
-`;
-
-const IconButton = styled.button<{ $visible?: boolean }>`
-  padding: 2px;
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
-  transition: all ${({ theme }) => theme.transitions.DEFAULT};
-  opacity: ${({ $visible }) => $visible ? 1 : 0};
-
-  .group:hover & {
-    opacity: 1;
-  }
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.gray700};
-  }
-`;
-
-const ShapeTreeBorder = styled.div`
-  border-left: 1px solid rgba(63, 63, 70, 0.6);
-  margin-left: 22px;
-`;
-
-const ShapeNodeContainer = styled.div<{ $depth: number }>`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 0;
-  padding-left: ${({ $depth }) => $depth * 14 + 12}px;
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  color: ${({ theme }) => theme.colors.gray500};
-  cursor: default;
-  user-select: none;
-  transition: all ${({ theme }) => theme.transitions.DEFAULT};
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.gray300};
-    background-color: rgba(39, 39, 42, 0.4);
-  }
-`;
-
-const ShapeNodeSpacer = styled.div`
-  width: 16px;
-  flex-shrink: 0;
-`;
-
-const ShapeNodeName = styled.span`
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-`;
-
-const ShapeNodeType = styled.span`
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${({ theme }) => theme.colors.gray600};
-  margin-right: ${({ theme }) => theme.spacing[2]};
-  flex-shrink: 0;
-`;
-
-const SelectedLayerFooter = styled.div`
-  border-top: 1px solid ${({ theme }) => theme.colors.gray800};
-  padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
-  background-color: rgba(24, 24, 27, 0.8);
-`;
-
-const FooterContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-`;
-
-const FooterLayerName = styled.span`
-  font-size: 11px;
-  color: ${({ theme }) => theme.colors.gray400};
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const FooterIndex = styled.span`
-  font-size: 9px;
-  color: ${({ theme }) => theme.colors.gray600};
-  text-transform: uppercase;
-`;
+import * as S from '../../styles/LeftPanelStyles';
 
 interface LeftPanelProps {
   animation: LottieAnimation | null;
@@ -323,24 +53,15 @@ const SHAPE_TYPE_LABELS: Record<string, string> = {
   mm: 'Merge',
 };
 
-const StyledIconWrapper = styled.div`
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
 const LayerTypeIcon = ({ type }: { type: number }) => {
   const color = LAYER_TYPE_COLOR_MAP[type] || '#a1a1aa';
   
   switch (type) {
-    case 0: return <StyledIconWrapper><Layers size={12} color={color} /></StyledIconWrapper>;
-    case 2: return <StyledIconWrapper><Image size={12} color={color} /></StyledIconWrapper>;
-    case 4: return <StyledIconWrapper><Box size={12} color={color} /></StyledIconWrapper>;
-    case 5: return <StyledIconWrapper><Type size={12} color={color} /></StyledIconWrapper>;
-    default: return <StyledIconWrapper><CircleDot size={12} color={color} /></StyledIconWrapper>;
+    case 0: return <S.StyledIconWrapper><Layers size={12} color={color} /></S.StyledIconWrapper>;
+    case 2: return <S.StyledIconWrapper><Image size={12} color={color} /></S.StyledIconWrapper>;
+    case 4: return <S.StyledIconWrapper><Box size={12} color={color} /></S.StyledIconWrapper>;
+    case 5: return <S.StyledIconWrapper><Type size={12} color={color} /></S.StyledIconWrapper>;
+    default: return <S.StyledIconWrapper><CircleDot size={12} color={color} /></S.StyledIconWrapper>;
   }
 };
 
@@ -372,24 +93,24 @@ function ShapeNode({
 
   return (
     <div>
-      <ShapeNodeContainer $depth={depth}>
+      <S.ShapeNodeContainer $depth={depth}>
         {hasChildren ? (
-          <ExpandButton onClick={() => onToggle(node.id)}>
+          <S.ExpandButton onClick={() => onToggle(node.id)}>
             {isExpanded ? (
               <ChevronDown size={10} color="#71717a" />
             ) : (
               <ChevronRight size={10} color="#71717a" />
             )}
-          </ExpandButton>
+          </S.ExpandButton>
         ) : (
-          <ShapeNodeSpacer />
+          <S.ShapeNodeSpacer />
         )}
 
         <FileCode size={10} color="#52525b" style={{ flexShrink: 0 }} />
 
-        <ShapeNodeName>{node.name}</ShapeNodeName>
-        <ShapeNodeType>{node.type}</ShapeNodeType>
-      </ShapeNodeContainer>
+        <S.ShapeNodeName>{node.name}</S.ShapeNodeName>
+        <S.ShapeNodeType>{node.type}</S.ShapeNodeType>
+      </S.ShapeNodeContainer>
 
       {hasChildren && isExpanded &&
         node.children!.map((child) => (
@@ -440,14 +161,14 @@ function LayerRow({
 
   return (
     <div className="group">
-      <LayerRowContainer
+      <S.LayerRowContainer
         $isSelected={isSelected}
         $isVisible={isVisible}
         $isLocked={isLocked}
         onClick={() => !isLocked && onLayerSelect(isSelected ? null : index)}
       >
         {hasShapes ? (
-          <ExpandButton
+          <S.ExpandButton
             onClick={(e) => { e.stopPropagation(); onToggleLayer(index); }}
           >
             {isExpanded ? (
@@ -455,19 +176,19 @@ function LayerRow({
             ) : (
               <ChevronRight size={12} color="#a1a1aa" />
             )}
-          </ExpandButton>
+          </S.ExpandButton>
         ) : (
-          <ExpandSpacer />
+          <S.ExpandSpacer />
         )}
         <LayerTypeIcon type={layer.ty} />
-        <LayerName $isSelected={isSelected}>
+        <S.LayerName $isSelected={isSelected}>
           {layer.nm || `Layer ${index}`}
-        </LayerName>
-        <LayerTypeLabel $color={LAYER_TYPE_COLOR_MAP[layer.ty] || '#71717a'}>
+        </S.LayerName>
+        <S.LayerTypeLabel $color={LAYER_TYPE_COLOR_MAP[layer.ty] || '#71717a'}>
           {LAYER_TYPE_LABELS[layer.ty] ?? '?'}
-        </LayerTypeLabel>
-        <IconButtonGroup onClick={(e) => e.stopPropagation()}>
-          <IconButton
+        </S.LayerTypeLabel>
+        <S.IconButtonGroup onClick={(e) => e.stopPropagation()}>
+          <S.IconButton
             onClick={() => onToggleVisibility(index)}
             $visible={!isVisible}
             title={isVisible ? 'Hide layer' : 'Show layer'}
@@ -477,9 +198,9 @@ function LayerRow({
             ) : (
               <EyeOff size={12} color="#f87171" />
             )}
-          </IconButton>
+          </S.IconButton>
 
-          <IconButton
+          <S.IconButton
             onClick={() => onToggleLock(index)}
             $visible={isLocked}
             title={isLocked ? 'Unlock layer' : 'Lock layer'}
@@ -489,12 +210,12 @@ function LayerRow({
             ) : (
               <Unlock size={12} color="#a1a1aa" />
             )}
-          </IconButton>
-        </IconButtonGroup>
-      </LayerRowContainer>
+          </S.IconButton>
+        </S.IconButtonGroup>
+      </S.LayerRowContainer>
 
       {hasShapes && isExpanded && (
-        <ShapeTreeBorder>
+        <S.ShapeTreeBorder>
           {shapeTree.map((node) => (
             <ShapeNode
               key={node.id}
@@ -504,7 +225,7 @@ function LayerRow({
               onToggle={onToggleShapeNode}
             />
           ))}
-        </ShapeTreeBorder>
+        </S.ShapeTreeBorder>
       )}
     </div>
   );
@@ -557,49 +278,49 @@ export function LeftPanel({
   }, [animation]);
 
   return (
-    <PanelContainer>
-      <Header>
-        <HeaderRow>
-          <SectionTitle>Layers</SectionTitle>
+    <S.PanelContainer>
+      <S.Header>
+        <S.HeaderRow>
+          <S.SectionTitle>Layers</S.SectionTitle>
           {stats && (
-            <Stats>
+            <S.Stats>
               {stats.total} layers · {stats.shapes} shapes
-            </Stats>
+            </S.Stats>
           )}
-        </HeaderRow>
-        <SearchContainer>
-          <SearchIcon />
-          <SearchInput
+        </S.HeaderRow>
+        <S.SearchContainer>
+          <S.SearchIcon />
+          <S.SearchInput
             type="text"
             placeholder="Search layers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </SearchContainer>
-      </Header>
+        </S.SearchContainer>
+      </S.Header>
       {animation && (
-        <CompositionInfo>
+        <S.CompositionInfo>
           <Layers size={12} color="#71717a" style={{ flexShrink: 0 }} />
-          <CompositionName>
+          <S.CompositionName>
             {animation.nm || 'Composition'}
-          </CompositionName>
-          <CompositionMeta>
+          </S.CompositionName>
+          <S.CompositionMeta>
             {animation.fr}fps · {animation.op - animation.ip}f
-          </CompositionMeta>
-        </CompositionInfo>
+          </S.CompositionMeta>
+        </S.CompositionInfo>
       )}
-      <LayersContainer>
+      <S.LayersContainer>
         {!animation ? (
-          <EmptyState>
+          <S.EmptyState>
             <FileCode size={32} style={{ opacity: 0.3 }} />
-            <EmptyText>No animation loaded</EmptyText>
-          </EmptyState>
+            <S.EmptyText>No animation loaded</S.EmptyText>
+          </S.EmptyState>
         ) : filteredLayers.length === 0 ? (
-          <EmptyState>
-            <EmptyText>No layers match "{searchQuery}"</EmptyText>
-          </EmptyState>
+          <S.EmptyState>
+            <S.EmptyText>No layers match "{searchQuery}"</S.EmptyText>
+          </S.EmptyState>
         ) : (
-          <LayerList>
+          <S.LayerList>
             {filteredLayers.map(({ layer, index }) => (
               <LayerRow
                 key={index}
@@ -615,22 +336,22 @@ export function LeftPanel({
                 onToggleShapeNode={toggleShapeNode}
               />
             ))}
-          </LayerList>
+          </S.LayerList>
         )}
-      </LayersContainer>
+      </S.LayersContainer>
       {selectedLayerIndex !== null && animation && (
-        <SelectedLayerFooter>
-          <FooterContent>
+        <S.SelectedLayerFooter>
+          <S.FooterContent>
             <LayerTypeIcon type={animation.layers[selectedLayerIndex]?.ty} />
-            <FooterLayerName>
+            <S.FooterLayerName>
               {animation.layers[selectedLayerIndex]?.nm || `Layer ${selectedLayerIndex}`}
-            </FooterLayerName>
-            <FooterIndex>
+            </S.FooterLayerName>
+            <S.FooterIndex>
               #{selectedLayerIndex}
-            </FooterIndex>
-          </FooterContent>
-        </SelectedLayerFooter>
+            </S.FooterIndex>
+          </S.FooterContent>
+        </S.SelectedLayerFooter>
       )}
-    </PanelContainer>
+    </S.PanelContainer>
   );
 }

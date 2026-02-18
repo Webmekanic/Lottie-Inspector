@@ -1,13 +1,12 @@
-import styled from 'styled-components';
 import { Input } from './ui/input';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
+import * as S from '../../styles/RightPanelStyles';
 import { useEffect, useState, useCallback } from 'react';
 import {
   Move,
   Droplets,
   PenLine,
-  Layers,
   Info,
   Clock,
   Link2,
@@ -197,427 +196,6 @@ function updateStrokeOpacity(shapes: LottieShape[], opacity: number): LottieShap
   });
 }
 
-// ── Styled Components ──
-
-const PanelContainer = styled.div`
-  width: 300px;
-  background-color: ${({ theme }) => theme.colors.gray900};
-  border-left: 1px solid ${({ theme }) => theme.colors.gray800};
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-`;
-
-const EmptyStateContainer = styled.div`
-  width: 300px;
-  background-color: ${({ theme }) => theme.colors.gray900};
-  border-left: 1px solid ${({ theme }) => theme.colors.gray800};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing[3]};
-`;
-
-const EmptyStateIcon = styled(Layers)`
-  width: ${({ theme }) => theme.spacing[10]};
-  height: ${({ theme }) => theme.spacing[10]};
-  color: ${({ theme }) => theme.colors.gray700};
-`;
-
-const EmptyStateText = styled.p`
-  color: ${({ theme }) => theme.colors.gray600};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  text-align: center;
-  line-height: 1.625;
-  padding: 0 ${({ theme }) => theme.spacing[6]};
-`;
-
-const LockedStateContainer = styled.div`
-  width: 300px;
-  background-color: ${({ theme }) => theme.colors.gray900};
-  border-left: 1px solid ${({ theme }) => theme.colors.gray800};
-  display: flex;
-  flex-direction: column;
-`;
-
-const LockedStateContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing[3]};
-  padding: 0 ${({ theme }) => theme.spacing[6]};
-`;
-
-const LockedIconWrapper = styled.div`
-  width: ${({ theme }) => theme.spacing[12]};
-  height: ${({ theme }) => theme.spacing[12]};
-  border-radius: ${({ theme }) => theme.borderRadius.full};
-  background-color: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const LockedIcon = styled.svg`
-  width: ${({ theme }) => theme.spacing[6]};
-  height: ${({ theme }) => theme.spacing[6]};
-  color: ${({ theme }) => theme.colors.amber400};
-`;
-
-const LockedTextContainer = styled.div`
-  text-align: center;
-`;
-
-const LockedTitle = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  color: ${({ theme }) => theme.colors.amber400};
-  margin-bottom: ${({ theme }) => theme.spacing[1]};
-`;
-
-const LockedDescription = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  color: ${({ theme }) => theme.colors.gray500};
-  line-height: 1.625;
-`;
-
-const Header = styled.div`
-  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
-  flex-shrink: 0;
-`;
-
-const HeaderContent = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing[2]};
-`;
-
-const HeaderInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const LayerName = styled.h3`
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  color: ${({ theme }) => theme.colors.white};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const LayerMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  margin-top: ${({ theme }) => theme.spacing[0.5]};
-`;
-
-const LayerType = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray500};
-`;
-
-const LayerIndex = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray600};
-`;
-
-const LayerParent = styled.span`
-  font-size: 10px;
-  color: rgba(59, 130, 246, 0.7);
-`;
-
-const AnimatedBadge = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[1]};
-  background-color: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
-  padding: ${({ theme }) => theme.spacing[0.5]} ${({ theme }) => theme.spacing[1.5]};
-  flex-shrink: 0;
-`;
-
-const AnimatedDot = styled.div`
-  width: ${({ theme }) => theme.spacing[1.5]};
-  height: ${({ theme }) => theme.spacing[1.5]};
-  border-radius: ${({ theme }) => theme.borderRadius.full};
-  background-color: ${({ theme }) => theme.colors.amber400};
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
-`;
-
-const AnimatedText = styled.span`
-  font-size: 9px;
-  color: ${({ theme }) => theme.colors.amber400};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
-const SectionContainer = styled.div``;
-
-const SectionButton = styled.button`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background-color ${({ theme }) => theme.transitions.DEFAULT};
-
-  &:hover {
-    background-color: rgba(39, 39, 42, 0.4);
-  }
-`;
-
-const SectionIcon = styled.div`
-  width: ${({ theme }) => theme.spacing[3]};
-  height: ${({ theme }) => theme.spacing[3]};
-  color: ${({ theme }) => theme.colors.gray500};
-  flex-shrink: 0;
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const SectionTitle = styled.span`
-  font-size: 10px;
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: ${({ theme }) => theme.colors.gray500};
-  flex: 1;
-  text-align: left;
-`;
-
-const ChevronIcon = styled.div`
-  width: ${({ theme }) => theme.spacing[3]};
-  height: ${({ theme }) => theme.spacing[3]};
-  color: ${({ theme }) => theme.colors.gray600};
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const SectionContent = styled.div`
-  padding: 0 ${({ theme }) => theme.spacing[4]} ${({ theme }) => theme.spacing[4]};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[3]};
-`;
-
-const PropertyGroup = styled.div``;
-
-const PropertyLabel = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray600};
-  display: block;
-  margin-bottom: ${({ theme }) => theme.spacing[1.5]};
-`;
-
-const AnimatedIndicator = styled.span`
-  color: ${({ theme }) => theme.colors.amber400};
-  margin-left: ${({ theme }) => theme.spacing[1]};
-`;
-
-const FieldRowContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-`;
-
-const FieldLabel = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray500};
-  width: ${({ theme }) => theme.spacing[16]};
-  flex-shrink: 0;
-`;
-
-const FieldContent = styled.div`
-  flex: 1;
-`;
-
-const NumberInputWrapper = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-const NumberInputSuffix = styled.span`
-  position: absolute;
-  right: ${({ theme }) => theme.spacing[2]};
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray500};
-  pointer-events: none;
-`;
-
-const XYInputsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[1.5]};
-`;
-
-const XYInputGroup = styled.div`
-  flex: 1;
-`;
-
-const XYInputLabel = styled.span`
-  font-size: 9px;
-  color: ${({ theme }) => theme.colors.gray600};
-  display: block;
-  margin-bottom: ${({ theme }) => theme.spacing[0.5]};
-  margin-left: ${({ theme }) => theme.spacing[0.5]};
-`;
-
-const LinkButton = styled.button`
-  margin-top: ${({ theme }) => theme.spacing[4]};
-  padding: ${({ theme }) => theme.spacing[1]};
-  background-color: transparent;
-  border: none;
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color ${({ theme }) => theme.transitions.DEFAULT};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.gray700};
-  }
-`;
-
-const LinkIcon = styled.div<{ $linked?: boolean }>`
-  width: ${({ theme }) => theme.spacing[3]};
-  height: ${({ theme }) => theme.spacing[3]};
-  color: ${({ $linked, theme }) => 
-    $linked ? theme.colors.blue400 : theme.colors.gray600};
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const SliderContainer = styled.div``;
-
-const SliderHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: ${({ theme }) => theme.spacing[1.5]};
-`;
-
-const SliderLabel = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray600};
-`;
-
-const SliderValue = styled.span`
-  font-size: 10px;
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-  color: ${({ theme }) => theme.colors.gray400};
-`;
-
-const ColorInputContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[2]};
-`;
-
-const ColorPicker = styled.input`
-  width: ${({ theme }) => theme.spacing[8]};
-  height: ${({ theme }) => theme.spacing[8]};
-  background-color: transparent;
-  border: 1px solid ${({ theme }) => theme.colors.gray700};
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
-  cursor: pointer;
-  overflow: hidden;
-`;
-
-const EmptyMessage = styled.p`
-  font-size: 11px;
-  color: ${({ theme }) => theme.colors.gray600};
-  font-style: italic;
-`;
-
-const BlendSelect = styled.select`
-  width: 100%;
-  height: ${({ theme }) => theme.spacing[8]};
-  background-color: ${({ theme }) => theme.colors.gray800};
-  border: 1px solid ${({ theme }) => theme.colors.gray700};
-  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
-  color: ${({ theme }) => theme.colors.gray300};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  padding: 0 ${({ theme }) => theme.spacing[2]};
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.blue500};
-  }
-`;
-
-const InfoRowsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing[2]};
-`;
-
-const InfoValue = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-  color: ${({ theme }) => theme.colors.gray300};
-`;
-
-const InfoValueHighlight = styled(InfoValue)`
-  color: ${({ theme }) => theme.colors.blue400};
-`;
-
-const InfoValueWarning = styled(InfoValue)`
-  color: ${({ theme }) => theme.colors.amber400};
-`;
-
-const TimingInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[1.5]};
-`;
-
-const TimingValue = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
-  color: ${({ theme }) => theme.colors.gray300};
-`;
-
-const TimingUnit = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.gray600};
-`;
-
-const Spacer = styled.div`
-  flex: 1;
-  min-height: ${({ theme }) => theme.spacing[4]};
-`;
-
 // ── Components ──
 
 function Section({
@@ -633,28 +211,28 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <SectionContainer>
-      <SectionButton onClick={() => setOpen((v) => !v)}>
-        <SectionIcon>
+    <S.SectionContainer>
+      <S.SectionButton onClick={() => setOpen((v) => !v)}>
+        <S.SectionIcon>
           <Icon />
-        </SectionIcon>
-        <SectionTitle>{title}</SectionTitle>
-        <ChevronIcon>
+        </S.SectionIcon>
+        <S.SectionTitle>{title}</S.SectionTitle>
+        <S.ChevronIcon>
           {open ? <ChevronDown /> : <ChevronRight />}
-        </ChevronIcon>
-      </SectionButton>
-      {open && <SectionContent>{children}</SectionContent>}
+        </S.ChevronIcon>
+      </S.SectionButton>
+      {open && <S.SectionContent>{children}</S.SectionContent>}
       <Separator className="bg-gray-800" />
-    </SectionContainer>
+    </S.SectionContainer>
   );
 }
 
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <FieldRowContainer>
-      <FieldLabel>{label}</FieldLabel>
-      <FieldContent>{children}</FieldContent>
-    </FieldRowContainer>
+    <S.FieldRowContainer>
+      <S.FieldLabel>{label}</S.FieldLabel>
+      <S.FieldContent>{children}</S.FieldContent>
+    </S.FieldRowContainer>
   );
 }
 
@@ -680,7 +258,7 @@ function NumberInput({
   }, [value]);
 
   return (
-    <NumberInputWrapper>
+    <S.NumberInputWrapper>
       <Input
         type="number"
         value={local}
@@ -709,8 +287,8 @@ function NumberInput({
         }}
         className="h-7 bg-gray-800 border-gray-700 text-gray-200 text-xs font-mono pr-6"
       />
-      {suffix && <NumberInputSuffix>{suffix}</NumberInputSuffix>}
-    </NumberInputWrapper>
+      {suffix && <S.NumberInputSuffix>{suffix}</S.NumberInputSuffix>}
+    </S.NumberInputWrapper>
   );
 }
 
@@ -736,9 +314,9 @@ function XYInputs({
   onToggleLink?: () => void;
 }) {
   return (
-    <XYInputsContainer>
-      <XYInputGroup>
-        <XYInputLabel>{labelX}</XYInputLabel>
+    <S.XYInputsContainer>
+      <S.XYInputGroup>
+        <S.XYInputLabel>{labelX}</S.XYInputLabel>
         <NumberInput
           value={x}
           onChange={(v) => {
@@ -747,19 +325,19 @@ function XYInputs({
           }}
           suffix={suffix}
         />
-      </XYInputGroup>
+      </S.XYInputGroup>
       {onToggleLink && (
-        <LinkButton
+        <S.LinkButton
           onClick={onToggleLink}
           title={linked ? 'Unlink X/Y' : 'Link X/Y'}
         >
-          <LinkIcon $linked={linked}>
+          <S.LinkIcon $linked={linked}>
             {linked ? <Link2 /> : <Unlink2 />}
-          </LinkIcon>
-        </LinkButton>
+          </S.LinkIcon>
+        </S.LinkButton>
       )}
-      <XYInputGroup>
-        <XYInputLabel>{labelY}</XYInputLabel>
+      <S.XYInputGroup>
+        <S.XYInputLabel>{labelY}</S.XYInputLabel>
         <NumberInput
           value={y}
           onChange={(v) => {
@@ -768,8 +346,8 @@ function XYInputs({
           }}
           suffix={suffix}
         />
-      </XYInputGroup>
-    </XYInputsContainer>
+      </S.XYInputGroup>
+    </S.XYInputsContainer>
   );
 }
 
@@ -819,12 +397,12 @@ export function RightPanel({
 
   if (!selectedLayer || selectedLayerIndex === null) {
     return (
-      <EmptyStateContainer>
-        <EmptyStateIcon />
-        <EmptyStateText>
+      <S.EmptyStateContainer>
+        <S.EmptyStateIcon />
+        <S.EmptyStateText>
           Select a layer in the panel to inspect and edit its properties
-        </EmptyStateText>
-      </EmptyStateContainer>
+        </S.EmptyStateText>
+      </S.EmptyStateContainer>
     );
   }
 
@@ -835,67 +413,67 @@ export function RightPanel({
 
   if (isLocked) {
     return (
-      <LockedStateContainer>
-        <Header>
-          <HeaderContent>
-            <HeaderInfo>
-              <LayerName>
+      <S.LockedStateContainer>
+        <S.Header>
+          <S.HeaderContent>
+            <S.HeaderInfo>
+              <S.LayerName>
                 {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
-              </LayerName>
-              <LayerMeta>
-                <LayerType>{layerTypeLabel} Layer</LayerType>
-                <LayerIndex>#{selectedLayer.ind}</LayerIndex>
-              </LayerMeta>
-            </HeaderInfo>
-          </HeaderContent>
-        </Header>
+              </S.LayerName>
+              <S.LayerMeta>
+                <S.LayerType>{layerTypeLabel} Layer</S.LayerType>
+                <S.LayerIndex>#{selectedLayer.ind}</S.LayerIndex>
+              </S.LayerMeta>
+            </S.HeaderInfo>
+          </S.HeaderContent>
+        </S.Header>
         
-        <LockedStateContent>
-          <LockedIconWrapper>
-            <LockedIcon fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <S.LockedStateContent>
+          <S.LockedIconWrapper>
+            <S.LockedIcon fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </LockedIcon>
-          </LockedIconWrapper>
-          <LockedTextContainer>
-            <LockedTitle>Layer is Locked</LockedTitle>
-            <LockedDescription>
+            </S.LockedIcon>
+          </S.LockedIconWrapper>
+          <S.LockedTextContainer>
+            <S.LockedTitle>Layer is Locked</S.LockedTitle>
+            <S.LockedDescription>
               This layer cannot be edited. Click the lock icon in the layer panel to unlock it.
-            </LockedDescription>
-          </LockedTextContainer>
-        </LockedStateContent>
-      </LockedStateContainer>
+            </S.LockedDescription>
+          </S.LockedTextContainer>
+        </S.LockedStateContent>
+      </S.LockedStateContainer>
     );
   }
 
   return (
-    <PanelContainer>
-      <Header>
-        <HeaderContent>
-          <HeaderInfo>
-            <LayerName>
+    <S.PanelContainer>
+      <S.Header>
+        <S.HeaderContent>
+          <S.HeaderInfo>
+            <S.LayerName>
               {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
-            </LayerName>
-            <LayerMeta>
-              <LayerType>{layerTypeLabel} Layer</LayerType>
-              <LayerIndex>#{selectedLayer.ind}</LayerIndex>
+            </S.LayerName>
+            <S.LayerMeta>
+              <S.LayerType>{layerTypeLabel} Layer</S.LayerType>
+              <S.LayerIndex>#{selectedLayer.ind}</S.LayerIndex>
               {selectedLayer.parent !== undefined && (
-                <LayerParent>↳ {selectedLayer.parent}</LayerParent>
+                <S.LayerParent>↳ {selectedLayer.parent}</S.LayerParent>
               )}
-            </LayerMeta>
-          </HeaderInfo>
+            </S.LayerMeta>
+          </S.HeaderInfo>
           {(isAnimated(transform?.p) || isAnimated(transform?.r) || isAnimated(transform?.s)) && (
-            <AnimatedBadge>
-              <AnimatedDot />
-              <AnimatedText>Animated</AnimatedText>
-            </AnimatedBadge>
+            <S.AnimatedBadge>
+              <S.AnimatedDot />
+              <S.AnimatedText>Animated</S.AnimatedText>
+            </S.AnimatedBadge>
           )}
-        </HeaderContent>
-      </Header>
+        </S.HeaderContent>
+      </S.Header>
       <Section icon={Move} title="Transform">
-        <PropertyGroup>
-          <PropertyLabel>
-            Position {isAnimated(transform?.p) && <AnimatedIndicator>◆</AnimatedIndicator>}
-          </PropertyLabel>
+        <S.PropertyGroup>
+          <S.PropertyLabel>
+            Position {isAnimated(transform?.p) && <S.AnimatedIndicator>◆</S.AnimatedIndicator>}
+          </S.PropertyLabel>
           <XYInputs
             x={posX}
             y={posY}
@@ -903,9 +481,9 @@ export function RightPanel({
             onChangeY={(v) => updateTransform('p', v, 1)}
             suffix="px"
           />
-        </PropertyGroup>
-        <PropertyGroup>
-          <PropertyLabel>Anchor Point</PropertyLabel>
+        </S.PropertyGroup>
+        <S.PropertyGroup>
+          <S.PropertyLabel>Anchor Point</S.PropertyLabel>
           <XYInputs
             x={anchorX}
             y={anchorY}
@@ -913,11 +491,11 @@ export function RightPanel({
             onChangeY={(v) => updateTransform('a', v, 1)}
             suffix="px"
           />
-        </PropertyGroup>
-        <PropertyGroup>
-          <PropertyLabel>
-            Scale {isAnimated(transform?.s) && <AnimatedIndicator>◆</AnimatedIndicator>}
-          </PropertyLabel>
+        </S.PropertyGroup>
+        <S.PropertyGroup>
+          <S.PropertyLabel>
+            Scale {isAnimated(transform?.s) && <S.AnimatedIndicator>◆</S.AnimatedIndicator>}
+          </S.PropertyLabel>
           <XYInputs
             x={scaleX}
             y={scaleY}
@@ -927,7 +505,7 @@ export function RightPanel({
             linked={linkedScale}
             onToggleLink={() => setLinkedScale((v) => !v)}
           />
-        </PropertyGroup>
+        </S.PropertyGroup>
         <FieldRow label="Rotation">
           <NumberInput
             value={rotation}
@@ -936,13 +514,13 @@ export function RightPanel({
             step={0.1}
           />
         </FieldRow>
-        <SliderContainer>
-          <SliderHeader>
-            <SliderLabel>
-              Opacity {isAnimated(transform?.o) && <AnimatedIndicator>◆</AnimatedIndicator>}
-            </SliderLabel>
-            <SliderValue>{Math.round(opacity)}%</SliderValue>
-          </SliderHeader>
+        <S.SliderContainer>
+          <S.SliderHeader>
+            <S.SliderLabel>
+              Opacity {isAnimated(transform?.o) && <S.AnimatedIndicator>◆</S.AnimatedIndicator>}
+            </S.SliderLabel>
+            <S.SliderValue>{Math.round(opacity)}%</S.SliderValue>
+          </S.SliderHeader>
           <Slider
             value={[opacity]}
             onValueChange={([v]) => updateTransform('o', v)}
@@ -951,16 +529,16 @@ export function RightPanel({
             step={1}
             className="w-full"
           />
-        </SliderContainer>
+        </S.SliderContainer>
       </Section>
       {isShapeLayer && (
         <Section icon={Droplets} title="Fill" defaultOpen={!!fillShape}>
           {fillShape ? (
             <>
-              <PropertyGroup>
-                <PropertyLabel>Color</PropertyLabel>
-                <ColorInputContainer>
-                  <ColorPicker
+              <S.PropertyGroup>
+                <S.PropertyLabel>Color</S.PropertyLabel>
+                <S.ColorInputContainer>
+                  <S.ColorPicker
                     type="color"
                     value={fillColorArr ? lottieColorToHex(fillColorArr) : '#000000'}
                     onChange={(e) => {
@@ -985,13 +563,13 @@ export function RightPanel({
                     }}
                     className="flex-1 h-7 bg-gray-800 border-gray-700 text-gray-300 text-xs font-mono"
                   />
-                </ColorInputContainer>
-              </PropertyGroup>
-              <SliderContainer>
-                <SliderHeader>
-                  <SliderLabel>Opacity</SliderLabel>
-                  <SliderValue>{Math.round(fillOpacity)}%</SliderValue>
-                </SliderHeader>
+                </S.ColorInputContainer>
+              </S.PropertyGroup>
+              <S.SliderContainer>
+                <S.SliderHeader>
+                  <S.SliderLabel>Opacity</S.SliderLabel>
+                  <S.SliderValue>{Math.round(fillOpacity)}%</S.SliderValue>
+                </S.SliderHeader>
                 <Slider
                   value={[fillOpacity]}
                   onValueChange={([v]) => {
@@ -1005,10 +583,10 @@ export function RightPanel({
                   step={1}
                   className="w-full"
                 />
-              </SliderContainer>
+              </S.SliderContainer>
             </>
           ) : (
-            <EmptyMessage>No fill found in this layer</EmptyMessage>
+            <S.EmptyMessage>No fill found in this layer</S.EmptyMessage>
           )}
         </Section>
       )}
@@ -1016,10 +594,10 @@ export function RightPanel({
         <Section icon={PenLine} title="Stroke" defaultOpen={!!strokeShape}>
           {strokeShape ? (
             <>
-              <PropertyGroup>
-                <PropertyLabel>Color</PropertyLabel>
-                <ColorInputContainer>
-                  <ColorPicker
+              <S.PropertyGroup>
+                <S.PropertyLabel>Color</S.PropertyLabel>
+                <S.ColorInputContainer>
+                  <S.ColorPicker
                     type="color"
                     value={strokeColorArr ? lottieColorToHex(strokeColorArr) : '#ffffff'}
                     onChange={(e) => {
@@ -1044,13 +622,13 @@ export function RightPanel({
                     }}
                     className="flex-1 h-7 bg-gray-800 border-gray-700 text-gray-300 text-xs font-mono"
                   />
-                </ColorInputContainer>
-              </PropertyGroup>
-              <SliderContainer>
-                <SliderHeader>
-                  <SliderLabel>Width</SliderLabel>
-                  <SliderValue>{strokeWidth}px</SliderValue>
-                </SliderHeader>
+                </S.ColorInputContainer>
+              </S.PropertyGroup>
+              <S.SliderContainer>
+                <S.SliderHeader>
+                  <S.SliderLabel>Width</S.SliderLabel>
+                  <S.SliderValue>{strokeWidth}px</S.SliderValue>
+                </S.SliderHeader>
                 <Slider
                   value={[strokeWidth]}
                   onValueChange={([v]) => {
@@ -1064,12 +642,12 @@ export function RightPanel({
                   step={0.5}
                   className="w-full"
                 />
-              </SliderContainer>
-              <SliderContainer>
-                <SliderHeader>
-                  <SliderLabel>Opacity</SliderLabel>
-                  <SliderValue>{Math.round(strokeOpacity)}%</SliderValue>
-                </SliderHeader>
+              </S.SliderContainer>
+              <S.SliderContainer>
+                <S.SliderHeader>
+                  <S.SliderLabel>Opacity</S.SliderLabel>
+                  <S.SliderValue>{Math.round(strokeOpacity)}%</S.SliderValue>
+                </S.SliderHeader>
                 <Slider
                   value={[strokeOpacity]}
                   onValueChange={([v]) => {
@@ -1083,16 +661,16 @@ export function RightPanel({
                   step={1}
                   className="w-full"
                 />
-              </SliderContainer>
+              </S.SliderContainer>
             </>
           ) : (
-            <EmptyMessage>No stroke found in this layer</EmptyMessage>
+            <S.EmptyMessage>No stroke found in this layer</S.EmptyMessage>
           )}
         </Section>
       )}
       <Section icon={Blend} title="Blending" defaultOpen={false}>
         <FieldRow label="Mode">
-          <BlendSelect
+          <S.BlendSelect
             value={selectedLayer.bm ?? 0}
             onChange={(e) => updateLayerProp('bm', parseInt(e.target.value))}
           >
@@ -1101,68 +679,68 @@ export function RightPanel({
                 {label}
               </option>
             ))}
-          </BlendSelect>
+          </S.BlendSelect>
         </FieldRow>
       </Section>
       <Section icon={Clock} title="Timing" defaultOpen={false}>
-        <InfoRowsContainer>
+        <S.InfoRowsContainer>
           <FieldRow label="In Point">
-            <TimingInfo>
-              <TimingValue>{selectedLayer.ip}</TimingValue>
-              <TimingUnit>
+            <S.TimingInfo>
+              <S.TimingValue>{selectedLayer.ip}</S.TimingValue>
+              <S.TimingUnit>
                 f ({animation ? (selectedLayer.ip / animation.fr).toFixed(2) : '—'}s)
-              </TimingUnit>
-            </TimingInfo>
+              </S.TimingUnit>
+            </S.TimingInfo>
           </FieldRow>
           <FieldRow label="Out Point">
-            <TimingInfo>
-              <TimingValue>{selectedLayer.op}</TimingValue>
-              <TimingUnit>
+            <S.TimingInfo>
+              <S.TimingValue>{selectedLayer.op}</S.TimingValue>
+              <S.TimingUnit>
                 f ({animation ? (selectedLayer.op / animation.fr).toFixed(2) : '—'}s)
-              </TimingUnit>
-            </TimingInfo>
+              </S.TimingUnit>
+            </S.TimingInfo>
           </FieldRow>
           <FieldRow label="Start">
-            <InfoValue>{selectedLayer.st}</InfoValue>
+            <S.InfoValue>{selectedLayer.st}</S.InfoValue>
           </FieldRow>
           <FieldRow label="Duration">
-            <TimingInfo>
-              <TimingValue>
+            <S.TimingInfo>
+              <S.TimingValue>
                 {selectedLayer.op - selectedLayer.ip}
-              </TimingValue>
-              <TimingUnit>frames</TimingUnit>
-            </TimingInfo>
+              </S.TimingValue>
+              <S.TimingUnit>frames</S.TimingUnit>
+            </S.TimingInfo>
           </FieldRow>
-        </InfoRowsContainer>
+        </S.InfoRowsContainer>
       </Section>
       <Section icon={Info} title="Layer Info" defaultOpen={false}>
-        <InfoRowsContainer>
+        <S.InfoRowsContainer>
           <FieldRow label="Index">
-            <InfoValue>{selectedLayer.ind}</InfoValue>
+            <S.InfoValue>{selectedLayer.ind}</S.InfoValue>
           </FieldRow>
           {selectedLayer.parent !== undefined && (
             <FieldRow label="Parent">
-              <InfoValueHighlight>{selectedLayer.parent}</InfoValueHighlight>
+              <S.InfoValueHighlight>{selectedLayer.parent}</S.InfoValueHighlight>
             </FieldRow>
           )}
           <FieldRow label="3D">
-            <InfoValue>
+            <S.InfoValue>
               {selectedLayer.ddd === 1 ? 'Yes' : 'No'}
-            </InfoValue>
+            </S.InfoValue>
           </FieldRow>
           <FieldRow label="Shapes">
-            <InfoValue>
+            <S.InfoValue>
               {selectedLayer.shapes?.length ?? 0}
-            </InfoValue>
+            </S.InfoValue>
           </FieldRow>
           {selectedLayer.sr !== undefined && selectedLayer.sr !== 1 && (
             <FieldRow label="Stretch">
-              <InfoValueWarning>{selectedLayer.sr}x</InfoValueWarning>
+              <S.InfoValueWarning>{selectedLayer.sr}x</S.InfoValueWarning>
             </FieldRow>
           )}
-        </InfoRowsContainer>
+        </S.InfoRowsContainer>
       </Section>
-      <Spacer />
-    </PanelContainer>
+      <S.Spacer />
+    </S.PanelContainer>
   );
 }
