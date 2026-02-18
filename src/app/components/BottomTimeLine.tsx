@@ -5,12 +5,10 @@ import {
   useMemo, useRef, useCallback, useEffect, useState, memo
 } from 'react';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const ROW_H        = 24;   // px per layer row
-const RULER_H      = 28;   // px ruler
-const HEADER_H     = 36;   // px top bar
-const LABEL_W      = 180;  // px label column
+const ROW_H        = 24;  
+const RULER_H      = 28;
+const HEADER_H     = 36; 
+const LABEL_W      = 180;
 const MIN_H        = 160;
 const MAX_H        = 520;
 
@@ -24,8 +22,6 @@ const LAYER_DOT_COLOR: Record<number, string> = {
   0: '#a78bfa', 1: '#fbbf24', 2: '#34d399', 3: '#6b7280', 4: '#60a5fa', 5: '#f472b6',
 };
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface BottomTimelineProps {
   animation:            LottieAnimation | null;
   currentFrame:         number;
@@ -37,8 +33,6 @@ interface BottomTimelineProps {
 }
 
 interface KfData { frame: number; props: string[] }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
@@ -64,8 +58,6 @@ function rulerInterval(total: number, zoom: number) {
   return [1,2,5,10,20,25,50,100,200,500].find(n => n >= raw) ?? 500;
 }
 
-// ─── Ruler ────────────────────────────────────────────────────────────────────
-
 const Ruler = memo(({ total, zoom, fps }: { total: number; zoom: number; fps: number }) => {
   const interval = rulerInterval(total, zoom);
   const marks = useMemo(() => {
@@ -74,7 +66,6 @@ const Ruler = memo(({ total, zoom, fps }: { total: number; zoom: number; fps: nu
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* alternating band every 10f */}
       {Array.from({length: Math.ceil(total/10)}).map((_,i) =>
         i%2===0 ? (
           <div key={i} className="absolute top-0 bottom-0"
@@ -100,8 +91,6 @@ const Ruler = memo(({ total, zoom, fps }: { total: number; zoom: number; fps: nu
   );
 });
 
-// ─── Layer row (track side) ───────────────────────────────────────────────────
-
 const TrackRow = memo(({ layer, index, total, isSelected, onSelect }:
   { layer: LottieLayer; index: number; total: number; isSelected: boolean; onSelect:()=>void }) => {
   const kfs = useMemo(() => extractKfs(layer), [layer]);
@@ -115,7 +104,6 @@ const TrackRow = memo(({ layer, index, total, isSelected, onSelect }:
       style={{ height: ROW_H }}
       onClick={onSelect}
     >
-      {/* In-out range bar */}
       <div
         className="absolute top-1/2 -translate-y-1/2 rounded-sm pointer-events-none"
         style={{
@@ -124,7 +112,6 @@ const TrackRow = memo(({ layer, index, total, isSelected, onSelect }:
           border: `1px solid ${isSelected ? color+'40' : 'rgba(255,255,255,0.07)'}`,
         }}
       />
-      {/* Keyframe diamonds */}
       {kfs.map(({frame, props}) => (
         <div key={frame}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex gap-px z-10 pointer-events-none"
@@ -142,16 +129,12 @@ const TrackRow = memo(({ layer, index, total, isSelected, onSelect }:
   );
 });
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
 export function BottomTimeline({
   animation, currentFrame, totalFrames, isPlaying,
   selectedLayerIndex, onFrameChange, onLayerSelect,
 }: BottomTimelineProps) {
   const { timelineZoom, setTimelineZoom } = useUIStore();
   const [panelHeight, setPanelHeight] = useState(240);
-
-  // ── Resize ──────────────────────────────────────────────────────────────
   const resizing = useRef(false);
   const resizeY0 = useRef(0);
   const resizeH0 = useRef(0);
@@ -167,8 +150,6 @@ export function BottomTimeline({
     window.addEventListener('mouseup', up);
     return () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
   }, []);
-
-  // ── Scrub ────────────────────────────────────────────────────────────────
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const [draggingState, setDraggingState] = useState(false);
@@ -190,7 +171,6 @@ export function BottomTimeline({
     return () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
   }, [frameFromX, onFrameChange]);
 
-  // ── Auto-scroll playhead during playback ─────────────────────────────────
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!isPlaying || !scrollRef.current || !trackRef.current) return;
@@ -200,20 +180,17 @@ export function BottomTimeline({
     scrollRef.current.scrollLeft = Math.max(0, pct*tw - vw*0.4);
   }, [currentFrame, isPlaying, totalFrames]);
 
-  // ── Sync vertical scroll: track → labels ─────────────────────────────────
   const labelScrollRef = useRef<HTMLDivElement>(null);
   const onTrackScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (labelScrollRef.current)
       labelScrollRef.current.scrollTop = e.currentTarget.scrollTop;
   }, []);
 
-  // ── Derived ──────────────────────────────────────────────────────────────
   const fps = animation?.fr ?? 30;
   const currentSec = fps > 0 ? (currentFrame/fps).toFixed(2) : '0.00';
   const playPct = totalFrames > 0 ? (currentFrame/totalFrames)*100 : 0;
   const layers = animation?.layers ?? [];
 
-  // ── Empty ────────────────────────────────────────────────────────────────
   if (!animation) {
     return (
       <div className="bg-gray-950 border-t border-gray-800/60 flex items-center justify-center" style={{height: MIN_H}}>
@@ -228,8 +205,6 @@ export function BottomTimeline({
   return (
     <div className="bg-gray-950 border-t border-gray-800/60 flex flex-col select-none overflow-hidden"
       style={{height: panelHeight}}>
-
-      {/* ── Drag resize handle ── */}
       <div
         className="h-[3px] flex-shrink-0 cursor-row-resize group"
         style={{background: 'transparent'}}
@@ -237,8 +212,6 @@ export function BottomTimeline({
       >
         <div className="h-px bg-gray-800/60 group-hover:bg-blue-500/50 transition-colors mt-1" />
       </div>
-
-      {/* ── Header ── */}
       <div className="flex items-center justify-between px-3 border-b border-gray-800/60 flex-shrink-0"
         style={{height: HEADER_H}}>
 
@@ -251,8 +224,6 @@ export function BottomTimeline({
             </div>
           )}
         </div>
-
-        {/* Frame counter */}
         <div className="flex items-center gap-1.5 bg-gray-900 border border-gray-800 rounded px-2 py-0.5">
           <span className="text-[10px] font-mono text-blue-400 tabular-nums w-10 text-right">
             {String(currentFrame).padStart(4,'0')}
@@ -265,8 +236,6 @@ export function BottomTimeline({
           <span className="text-[10px] font-mono text-gray-500">{currentSec}s</span>
           <span className="text-[10px] text-gray-700 ml-0.5">{fps}fps</span>
         </div>
-
-        {/* Zoom */}
         <div className="flex items-center gap-0.5">
           <button className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-colors"
             onClick={() => setTimelineZoom(clamp(timelineZoom-0.25, 0.25, 8))}>
@@ -282,23 +251,15 @@ export function BottomTimeline({
           </button>
         </div>
       </div>
-
-      {/* ── Body: labels + track ── */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* Label column */}
         <div className="flex-shrink-0 border-r border-gray-800/60 flex flex-col overflow-hidden"
           style={{width: LABEL_W}}>
-
-          {/* Ruler-height header */}
           <div className="flex-shrink-0 border-b border-gray-800/60 bg-gray-950 flex items-end px-2 pb-1"
             style={{height: RULER_H}}>
             <span className="text-[9px] text-gray-600 uppercase tracking-widest">
               {layers.length} layers
             </span>
           </div>
-
-          {/* Layer names */}
           <div ref={labelScrollRef}
             className="flex-1 overflow-y-auto overflow-x-hidden"
             style={{scrollbarWidth:'none'}}>
@@ -324,11 +285,9 @@ export function BottomTimeline({
             })}
           </div>
         </div>
-
-        {/* Track (horizontally + vertically scrollable) */}
         <div ref={scrollRef}
-          className="flex-1 overflow-x-auto overflow-y-auto"
-          style={{scrollbarWidth:'thin', scrollbarColor:'#374151 transparent'}}
+          className="flex-1 overflow-x-auto overflow-y-auto [&::-webkit-scrollbar]:hidden"
+          style={{scrollbarWidth:'none'}}
           onScroll={onTrackScroll}
         >
           <div
@@ -341,13 +300,10 @@ export function BottomTimeline({
             }}
             onMouseDown={onTrackDown}
           >
-            {/* Sticky ruler */}
             <div className="sticky top-0 z-20 border-b border-gray-800/60 bg-gray-950"
               style={{height: RULER_H, position:'sticky'}}>
               <Ruler total={totalFrames} zoom={timelineZoom} fps={fps} />
             </div>
-
-            {/* Layer rows */}
             {layers.map((layer, idx) => (
               <TrackRow key={idx}
                 layer={layer} index={idx} total={totalFrames}
@@ -355,12 +311,8 @@ export function BottomTimeline({
                 onSelect={() => onLayerSelect(idx)}
               />
             ))}
-
-            {/* Progress tint */}
             <div className="absolute top-0 bottom-0 left-0 pointer-events-none z-0"
               style={{width:`${playPct}%`, background:'rgba(96,165,250,0.025)'}} />
-
-            {/* Playhead — full height, always on top */}
             <div className="absolute top-0 bottom-0 pointer-events-none z-30"
               style={{
                 left:`${playPct}%`,
@@ -368,14 +320,12 @@ export function BottomTimeline({
                 background:'rgba(239,68,68,0.85)',
                 boxShadow:'0 0 6px rgba(239,68,68,0.3)',
               }}>
-              {/* Triangle cap */}
               <div className="absolute w-0 h-0" style={{
                 top:0, left:'50%', transform:'translateX(-50%)',
                 borderLeft:'5px solid transparent',
                 borderRight:'5px solid transparent',
                 borderTop:'7px solid rgb(239,68,68)',
               }}/>
-              {/* Frame label */}
               <div className="absolute bg-red-500 text-white text-[9px] font-mono px-1 py-px rounded-sm whitespace-nowrap"
                 style={{top:1, left:7}}>
                 {currentFrame}

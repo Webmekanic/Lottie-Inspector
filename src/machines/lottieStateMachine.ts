@@ -1,5 +1,6 @@
 import { setup, assign, fromPromise } from 'xstate';
 import { LottieAnimation, LottieLayer, RenderMode } from '../types/lottie';
+import { loadFromLocalStorage, clearLocalStorage } from '../utils/localStorage';
 
 export interface LottieContext {
   originalAnimation: LottieAnimation | null;
@@ -62,6 +63,9 @@ const exportFile = fromPromise(async ({ input }: { input: { animation: LottieAni
   URL.revokeObjectURL(url);
 });
 
+// Load persisted state from localStorage
+const persistedState = loadFromLocalStorage();
+
 export const lottieStateMachine = setup({
   types: {
     context: {} as LottieContext,
@@ -73,17 +77,17 @@ export const lottieStateMachine = setup({
   },
 }).createMachine({
   id: 'lottieInspector',
-  initial: 'idle',
+  initial: persistedState?.currentAnimation ? 'ready' : 'idle',
   context: {
-    originalAnimation: null,
-    currentAnimation: null,
+    originalAnimation: persistedState?.originalAnimation ?? null,
+    currentAnimation: persistedState?.currentAnimation ?? null,
     selectedLayerIndex: null,
     selectedLayer: null,
     isPlaying: false,
     currentFrame: 0,
-    speed: 1,
-    loop: true,
-    renderMode: 'svg',
+    speed: persistedState?.speed ?? 1,
+    loop: persistedState?.loop ?? true,
+    renderMode: persistedState?.renderMode ?? 'svg',
     error: null,
   },
   states: {
@@ -190,7 +194,8 @@ export const lottieStateMachine = setup({
               const layer = newAnimation.layers[event.layerIndex];
               
               if (layer) {
-                layer.visible = !(layer.visible === false);
+                // Toggle hidden property: hd=true means hidden, hd=false/undefined means visible
+                layer.hd = !layer.hd;
               }
               
               return newAnimation;
@@ -204,7 +209,7 @@ export const lottieStateMachine = setup({
               const layer = newAnimation.layers[event.layerIndex];
               
               if (layer) {
-                layer.visible = !(layer.visible === false);
+                layer.hd = !layer.hd;
               }
               
               return layer;
@@ -231,13 +236,13 @@ export const lottieStateMachine = setup({
               }
               
               const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const layer = newAnimation.layers[event.layerIndex];
+              const updatedLayer = newAnimation.layers[event.layerIndex];
               
-              if (layer) {
-                layer.locked = !layer.locked;
+              if (updatedLayer) {
+                updatedLayer.locked = !updatedLayer.locked;
               }
               
-              return layer;
+              return updatedLayer;
             },
           }),
         },
@@ -272,16 +277,19 @@ export const lottieStateMachine = setup({
         },
         EXPORT: 'exporting',
         RESET: {
-          actions: assign({
-            currentAnimation: ({ context }) =>
-              context.originalAnimation
-                ? JSON.parse(JSON.stringify(context.originalAnimation))
-                : null,
-            selectedLayerIndex: null,
-            selectedLayer: null,
-            currentFrame: 0,
-            isPlaying: false,
-          }),
+          actions: [
+            assign({
+              currentAnimation: ({ context }) =>
+                context.originalAnimation
+                  ? JSON.parse(JSON.stringify(context.originalAnimation))
+                  : null,
+              selectedLayerIndex: null,
+              selectedLayer: null,
+              currentFrame: 0,
+              isPlaying: false,
+            }),
+            () => clearLocalStorage(),
+          ],
         },
         UPLOAD_FILE: 'parsing',
       },

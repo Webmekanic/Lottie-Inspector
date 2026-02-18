@@ -22,8 +22,6 @@ import {
 import { LottieLayer, LottieShape, LottieAnimation } from '../../types/lottie';
 import { LottieEvent } from '../../machines/lottieStateMachine';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface RightPanelProps {
   selectedLayer: LottieLayer | null;
   selectedLayerIndex: number | null;
@@ -33,17 +31,15 @@ interface RightPanelProps {
 }
 
 interface FillData {
-  color: [number, number, number, number]; // rgba 0-1
+  color: [number, number, number, number];
   opacity: number;
 }
 
 interface StrokeData {
-  color: [number, number, number, number]; // rgba 0-1
+  color: [number, number, number, number];
   width: number;
   opacity: number;
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const LAYER_TYPE_LABELS: Record<number, string> = {
   0: 'Precomp',
@@ -73,11 +69,9 @@ const BLEND_MODES: Record<number, string> = {
 function getPropValue(prop: any, index?: number): number {
   if (!prop) return 0;
   if (prop.a === 0) {
-    // Static
     if (Array.isArray(prop.k)) return index !== undefined ? (prop.k[index] ?? 0) : prop.k[0] ?? 0;
     return typeof prop.k === 'number' ? prop.k : 0;
   }
-  // Animated — use first keyframe start value
   if (Array.isArray(prop.k) && prop.k.length > 0) {
     const kf = prop.k[0];
     if (kf.s) return index !== undefined ? (kf.s[index] ?? 0) : kf.s[0] ?? 0;
@@ -217,8 +211,6 @@ function updateStrokeOpacity(shapes: LottieShape[], opacity: number): LottieShap
   });
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
-
 function Section({
   icon: Icon,
   title,
@@ -252,8 +244,6 @@ function Section({
     </div>
   );
 }
-
-// ─── Field components ─────────────────────────────────────────────────────────
 
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -384,8 +374,6 @@ function XYInputs({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 export function RightPanel({
   selectedLayer,
   selectedLayerIndex,
@@ -404,8 +392,6 @@ export function RightPanel({
   const anchorY = getPropValue(transform?.a, 1);
   const rotation = getPropValue(transform?.r);
   const opacity = getPropValue(transform?.o);
-
-  // ── Derived fill/stroke from shape layer ──
   const fillShape = findFillShape(selectedLayer?.shapes);
   const strokeShape = findStrokeShape(selectedLayer?.shapes);
   const fillColor = fillShape?.c ? getPropValue(fillShape.c) : null;
@@ -415,7 +401,6 @@ export function RightPanel({
   const strokeWidth = strokeShape?.w ? getPropValue(strokeShape.w) : 2;
   const strokeOpacity = strokeShape?.o ? getPropValue(strokeShape.o) : 100;
 
-  // ── Send helpers ──
   const updateLayerProp = useCallback(
     (property: string, value: any) => {
       if (selectedLayerIndex === null) return;
@@ -434,7 +419,6 @@ export function RightPanel({
     [selectedLayer, updateLayerProp]
   );
 
-  // ── Empty state ──
   if (!selectedLayer || selectedLayerIndex === null) {
     return (
       <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col items-center justify-center gap-3">
@@ -449,11 +433,44 @@ export function RightPanel({
   const layerTypeLabel = LAYER_TYPE_LABELS[selectedLayer.ty] ?? 'Unknown';
   const isShapeLayer = selectedLayer.ty === 4;
   const isAnimated = (prop: any) => prop?.a === 1;
+  const isLocked = selectedLayer.locked === true;
+
+  if (isLocked) {
+    return (
+      <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col">
+        <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-white truncate">
+                {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
+              </h3>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[10px] text-gray-500">{layerTypeLabel} Layer</span>
+                <span className="text-[10px] text-gray-600">#{selectedLayer.ind}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6">
+          <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+            <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-amber-400 mb-1">Layer is Locked</p>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              This layer cannot be edited. Click the lock icon in the layer panel to unlock it.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col h-full overflow-y-auto">
-
-      {/* ── Layer header ── */}
       <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -468,7 +485,6 @@ export function RightPanel({
               )}
             </div>
           </div>
-          {/* Animated indicator */}
           {(isAnimated(transform?.p) || isAnimated(transform?.r) || isAnimated(transform?.s)) && (
             <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 rounded px-1.5 py-0.5 flex-shrink-0">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -477,11 +493,7 @@ export function RightPanel({
           )}
         </div>
       </div>
-
-      {/* ── Transform Section ── */}
       <Section icon={Move} title="Transform">
-
-        {/* Position */}
         <div>
           <span className="text-[10px] text-gray-600 block mb-1.5">
             Position {isAnimated(transform?.p) && <span className="text-amber-400 ml-1">◆</span>}
@@ -494,8 +506,6 @@ export function RightPanel({
             suffix="px"
           />
         </div>
-
-        {/* Anchor Point */}
         <div>
           <span className="text-[10px] text-gray-600 block mb-1.5">Anchor Point</span>
           <XYInputs
@@ -506,8 +516,6 @@ export function RightPanel({
             suffix="px"
           />
         </div>
-
-        {/* Scale */}
         <div>
           <span className="text-[10px] text-gray-600 block mb-1.5">
             Scale {isAnimated(transform?.s) && <span className="text-amber-400 ml-1">◆</span>}
@@ -522,8 +530,6 @@ export function RightPanel({
             onToggleLink={() => setLinkedScale((v) => !v)}
           />
         </div>
-
-        {/* Rotation */}
         <FieldRow label="Rotation">
           <NumberInput
             value={rotation}
@@ -532,8 +538,6 @@ export function RightPanel({
             step={0.1}
           />
         </FieldRow>
-
-        {/* Opacity */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[10px] text-gray-600">
@@ -551,13 +555,10 @@ export function RightPanel({
           />
         </div>
       </Section>
-
-      {/* ── Fill Section (Shape layers only) ── */}
       {isShapeLayer && (
         <Section icon={Droplets} title="Fill" defaultOpen={!!fillShape}>
           {fillShape ? (
             <>
-              {/* Color picker */}
               <div>
                 <span className="text-[10px] text-gray-600 block mb-1.5">Color</span>
                 <div className="flex items-center gap-2">
@@ -591,7 +592,6 @@ export function RightPanel({
                   />
                 </div>
               </div>
-              {/* Fill opacity */}
               <div>
                 <div className="flex justify-between mb-1.5">
                   <span className="text-[10px] text-gray-600">Opacity</span>
@@ -617,13 +617,10 @@ export function RightPanel({
           )}
         </Section>
       )}
-
-      {/* ── Stroke Section (Shape layers only) ── */}
       {isShapeLayer && (
         <Section icon={PenLine} title="Stroke" defaultOpen={!!strokeShape}>
           {strokeShape ? (
             <>
-              {/* Color */}
               <div>
                 <span className="text-[10px] text-gray-600 block mb-1.5">Color</span>
                 <div className="flex items-center gap-2">
@@ -655,8 +652,6 @@ export function RightPanel({
                   />
                 </div>
               </div>
-
-              {/* Width */}
               <div>
                 <div className="flex justify-between mb-1.5">
                   <span className="text-[10px] text-gray-600">Width</span>
@@ -676,8 +671,6 @@ export function RightPanel({
                   className="w-full"
                 />
               </div>
-
-              {/* Stroke opacity */}
               <div>
                 <div className="flex justify-between mb-1.5">
                   <span className="text-[10px] text-gray-600">Opacity</span>
@@ -703,8 +696,6 @@ export function RightPanel({
           )}
         </Section>
       )}
-
-      {/* ── Blend Mode ── */}
       <Section icon={Blend} title="Blending" defaultOpen={false}>
         <FieldRow label="Mode">
           <select
@@ -720,8 +711,6 @@ export function RightPanel({
           </select>
         </FieldRow>
       </Section>
-
-      {/* ── Timing Section ── */}
       <Section icon={Clock} title="Timing" defaultOpen={false}>
         <div className="space-y-2">
           <FieldRow label="In Point">
@@ -753,8 +742,6 @@ export function RightPanel({
           </FieldRow>
         </div>
       </Section>
-
-      {/* ── Layer Info ── */}
       <Section icon={Info} title="Layer Info" defaultOpen={false}>
         <div className="space-y-2">
           <FieldRow label="Index">
@@ -782,8 +769,6 @@ export function RightPanel({
           )}
         </div>
       </Section>
-
-      {/* Bottom padding */}
       <div className="flex-1 min-h-4" />
     </div>
   );

@@ -4,8 +4,6 @@ import { useState, useMemo } from 'react';
 import { LottieLayer, LottieAnimation, LottieShape } from '../../types/lottie';
 import { useUIStore } from '../../stores/uiStore';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface LeftPanelProps {
   animation: LottieAnimation | null;
   selectedLayerIndex: number | null;
@@ -20,8 +18,6 @@ interface ShapeTreeNode {
   type: string;
   children?: ShapeTreeNode[];
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const LAYER_TYPE_LABELS: Record<number, string> = {
   0: 'Precomp',
@@ -82,8 +78,6 @@ function buildShapeTree(shapes: LottieShape[], parentId: string): ShapeTreeNode[
     return { id, name: label, type: SHAPE_TYPE_LABELS[shape.ty as string] || shape.ty || '?', children };
   });
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 /**
  * Recursive shape node renderer.
@@ -173,7 +167,7 @@ function LayerRow({
 }) {
   const isExpanded = expandedLayers.has(index);
   const hasShapes = !!(layer.shapes?.length);
-  const isVisible = layer.visible !== false;
+  const isVisible = !layer.hd;
   const isLocked = layer.locked === true;
 
   const shapeTree = useMemo(
@@ -183,20 +177,19 @@ function LayerRow({
 
   return (
     <div>
-      {/* Layer row */}
       <div
         className={`
-          group flex items-center gap-1.5 py-1.5 cursor-pointer transition-colors
+          group flex items-center gap-1.5 py-1.5 transition-colors
           ${isSelected
             ? 'bg-blue-600/15 border-l-2 border-blue-500'
             : 'border-l-2 border-transparent hover:bg-gray-800/60'
           }
           ${!isVisible ? 'opacity-40' : ''}
+          ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
         `}
         style={{ paddingLeft: '10px' }}
         onClick={() => !isLocked && onLayerSelect(isSelected ? null : index)}
       >
-        {/* Expand toggle */}
         {hasShapes ? (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleLayer(index); }}
@@ -211,21 +204,13 @@ function LayerRow({
         ) : (
           <div className="w-4 flex-shrink-0" />
         )}
-
-        {/* Layer type icon */}
         <LayerTypeIcon type={layer.ty} />
-
-        {/* Layer name */}
         <span className={`text-xs font-mono flex-1 truncate ${isSelected ? 'text-blue-300' : 'text-gray-300'}`}>
           {layer.nm || `Layer ${index}`}
         </span>
-
-        {/* Type badge */}
         <span className={`text-[9px] uppercase tracking-wide flex-shrink-0 ${LAYER_TYPE_COLORS[layer.ty] ?? 'text-gray-500'}`}>
           {LAYER_TYPE_LABELS[layer.ty] ?? '?'}
         </span>
-
-        {/* Visibility & Lock — shown on hover or when toggled */}
         <div
           className="flex items-center gap-0.5 ml-1 flex-shrink-0"
           onClick={(e) => e.stopPropagation()}
@@ -260,7 +245,6 @@ function LayerRow({
         </div>
       </div>
 
-      {/* Shape tree (expanded) */}
       {hasShapes && isExpanded && (
         <div className="border-l border-gray-700/60 ml-[22px]">
           {shapeTree.map((node) => (
@@ -278,8 +262,6 @@ function LayerRow({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 export function LeftPanel({
   animation,
   selectedLayerIndex,
@@ -287,9 +269,7 @@ export function LeftPanel({
   onToggleVisibility,
   onToggleLock,
 }: LeftPanelProps) {
-  // Which layer rows are expanded (showing their shape tree)
   const [expandedLayers, setExpandedLayers] = useState<Set<number>>(new Set());
-  // Which shape tree nodes are expanded inside an expanded layer
   const [expandedShapeNodes, setExpandedShapeNodes] = useState<Set<string>>(new Set());
 
   const { searchQuery, setSearchQuery } = useUIStore();
@@ -325,15 +305,13 @@ export function LeftPanel({
     if (!animation) return null;
     return {
       total: animation.layers.length,
-      visible: animation.layers.filter((l) => l.visible !== false).length,
+      visible: animation.layers.filter((l) => !l.hd).length,
       shapes: animation.layers.filter((l) => l.ty === 4).length,
     };
   }, [animation]);
 
   return (
     <div className="w-[280px] bg-gray-900 border-r border-gray-800 flex flex-col h-full select-none">
-
-      {/* ── Header ── */}
       <div className="px-3 pt-3 pb-2 border-b border-gray-800 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
@@ -345,8 +323,6 @@ export function LeftPanel({
             </span>
           )}
         </div>
-
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
           <Input
@@ -358,8 +334,6 @@ export function LeftPanel({
           />
         </div>
       </div>
-
-      {/* ── Composition label ── */}
       {animation && (
         <div className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-800/50">
           <Layers className="w-3 h-3 text-gray-500 flex-shrink-0" />
@@ -371,8 +345,6 @@ export function LeftPanel({
           </span>
         </div>
       )}
-
-      {/* ── Layer tree ── */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {!animation ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-600">
@@ -403,8 +375,6 @@ export function LeftPanel({
           </div>
         )}
       </div>
-
-      {/* ── Footer: selected layer info ── */}
       {selectedLayerIndex !== null && animation && (
         <div className="border-t border-gray-800 px-3 py-2 bg-gray-900/80">
           <div className="flex items-center gap-2">
