@@ -1,13 +1,10 @@
-import { Label } from './ui/label';
+import styled from 'styled-components';
 import { Input } from './ui/input';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { useEffect, useState, useCallback } from 'react';
 import {
   Move,
-  Maximize2,
-  RotateCw,
-  Eye,
   Droplets,
   PenLine,
   Layers,
@@ -28,17 +25,6 @@ interface RightPanelProps {
   animation: LottieAnimation | null;
   /** Wire directly to XState: send(event) */
   onSend: (event: LottieEvent) => void;
-}
-
-interface FillData {
-  color: [number, number, number, number];
-  opacity: number;
-}
-
-interface StrokeData {
-  color: [number, number, number, number];
-  width: number;
-  opacity: number;
 }
 
 const LAYER_TYPE_LABELS: Record<number, string> = {
@@ -211,6 +197,429 @@ function updateStrokeOpacity(shapes: LottieShape[], opacity: number): LottieShap
   });
 }
 
+// ── Styled Components ──
+
+const PanelContainer = styled.div`
+  width: 300px;
+  background-color: ${({ theme }) => theme.colors.gray900};
+  border-left: 1px solid ${({ theme }) => theme.colors.gray800};
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+`;
+
+const EmptyStateContainer = styled.div`
+  width: 300px;
+  background-color: ${({ theme }) => theme.colors.gray900};
+  border-left: 1px solid ${({ theme }) => theme.colors.gray800};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing[3]};
+`;
+
+const EmptyStateIcon = styled(Layers)`
+  width: ${({ theme }) => theme.spacing[10]};
+  height: ${({ theme }) => theme.spacing[10]};
+  color: ${({ theme }) => theme.colors.gray700};
+`;
+
+const EmptyStateText = styled.p`
+  color: ${({ theme }) => theme.colors.gray600};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  text-align: center;
+  line-height: 1.625;
+  padding: 0 ${({ theme }) => theme.spacing[6]};
+`;
+
+const LockedStateContainer = styled.div`
+  width: 300px;
+  background-color: ${({ theme }) => theme.colors.gray900};
+  border-left: 1px solid ${({ theme }) => theme.colors.gray800};
+  display: flex;
+  flex-direction: column;
+`;
+
+const LockedStateContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing[3]};
+  padding: 0 ${({ theme }) => theme.spacing[6]};
+`;
+
+const LockedIconWrapper = styled.div`
+  width: ${({ theme }) => theme.spacing[12]};
+  height: ${({ theme }) => theme.spacing[12]};
+  border-radius: ${({ theme }) => theme.borderRadius.full};
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LockedIcon = styled.svg`
+  width: ${({ theme }) => theme.spacing[6]};
+  height: ${({ theme }) => theme.spacing[6]};
+  color: ${({ theme }) => theme.colors.amber400};
+`;
+
+const LockedTextContainer = styled.div`
+  text-align: center;
+`;
+
+const LockedTitle = styled.p`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  color: ${({ theme }) => theme.colors.amber400};
+  margin-bottom: ${({ theme }) => theme.spacing[1]};
+`;
+
+const LockedDescription = styled.p`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.gray500};
+  line-height: 1.625;
+`;
+
+const Header = styled.div`
+  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
+  flex-shrink: 0;
+`;
+
+const HeaderContent = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
+const HeaderInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const LayerName = styled.h3`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.white};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const LayerMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  margin-top: ${({ theme }) => theme.spacing[0.5]};
+`;
+
+const LayerType = styled.span`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray500};
+`;
+
+const LayerIndex = styled.span`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray600};
+`;
+
+const LayerParent = styled.span`
+  font-size: 10px;
+  color: rgba(59, 130, 246, 0.7);
+`;
+
+const AnimatedBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[1]};
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
+  padding: ${({ theme }) => theme.spacing[0.5]} ${({ theme }) => theme.spacing[1.5]};
+  flex-shrink: 0;
+`;
+
+const AnimatedDot = styled.div`
+  width: ${({ theme }) => theme.spacing[1.5]};
+  height: ${({ theme }) => theme.spacing[1.5]};
+  border-radius: ${({ theme }) => theme.borderRadius.full};
+  background-color: ${({ theme }) => theme.colors.amber400};
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+`;
+
+const AnimatedText = styled.span`
+  font-size: 9px;
+  color: ${({ theme }) => theme.colors.amber400};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+const SectionContainer = styled.div``;
+
+const SectionButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color ${({ theme }) => theme.transitions.DEFAULT};
+
+  &:hover {
+    background-color: rgba(39, 39, 42, 0.4);
+  }
+`;
+
+const SectionIcon = styled.div`
+  width: ${({ theme }) => theme.spacing[3]};
+  height: ${({ theme }) => theme.spacing[3]};
+  color: ${({ theme }) => theme.colors.gray500};
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
+const SectionTitle = styled.span`
+  font-size: 10px;
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${({ theme }) => theme.colors.gray500};
+  flex: 1;
+  text-align: left;
+`;
+
+const ChevronIcon = styled.div`
+  width: ${({ theme }) => theme.spacing[3]};
+  height: ${({ theme }) => theme.spacing[3]};
+  color: ${({ theme }) => theme.colors.gray600};
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
+const SectionContent = styled.div`
+  padding: 0 ${({ theme }) => theme.spacing[4]} ${({ theme }) => theme.spacing[4]};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[3]};
+`;
+
+const PropertyGroup = styled.div``;
+
+const PropertyLabel = styled.span`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray600};
+  display: block;
+  margin-bottom: ${({ theme }) => theme.spacing[1.5]};
+`;
+
+const AnimatedIndicator = styled.span`
+  color: ${({ theme }) => theme.colors.amber400};
+  margin-left: ${({ theme }) => theme.spacing[1]};
+`;
+
+const FieldRowContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
+const FieldLabel = styled.span`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray500};
+  width: ${({ theme }) => theme.spacing[16]};
+  flex-shrink: 0;
+`;
+
+const FieldContent = styled.div`
+  flex: 1;
+`;
+
+const NumberInputWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const NumberInputSuffix = styled.span`
+  position: absolute;
+  right: ${({ theme }) => theme.spacing[2]};
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray500};
+  pointer-events: none;
+`;
+
+const XYInputsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[1.5]};
+`;
+
+const XYInputGroup = styled.div`
+  flex: 1;
+`;
+
+const XYInputLabel = styled.span`
+  font-size: 9px;
+  color: ${({ theme }) => theme.colors.gray600};
+  display: block;
+  margin-bottom: ${({ theme }) => theme.spacing[0.5]};
+  margin-left: ${({ theme }) => theme.spacing[0.5]};
+`;
+
+const LinkButton = styled.button`
+  margin-top: ${({ theme }) => theme.spacing[4]};
+  padding: ${({ theme }) => theme.spacing[1]};
+  background-color: transparent;
+  border: none;
+  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color ${({ theme }) => theme.transitions.DEFAULT};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.gray700};
+  }
+`;
+
+const LinkIcon = styled.div<{ $linked?: boolean }>`
+  width: ${({ theme }) => theme.spacing[3]};
+  height: ${({ theme }) => theme.spacing[3]};
+  color: ${({ $linked, theme }) => 
+    $linked ? theme.colors.blue400 : theme.colors.gray600};
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
+const SliderContainer = styled.div``;
+
+const SliderHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacing[1.5]};
+`;
+
+const SliderLabel = styled.span`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray600};
+`;
+
+const SliderValue = styled.span`
+  font-size: 10px;
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  color: ${({ theme }) => theme.colors.gray400};
+`;
+
+const ColorInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
+const ColorPicker = styled.input`
+  width: ${({ theme }) => theme.spacing[8]};
+  height: ${({ theme }) => theme.spacing[8]};
+  background-color: transparent;
+  border: 1px solid ${({ theme }) => theme.colors.gray700};
+  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
+  cursor: pointer;
+  overflow: hidden;
+`;
+
+const EmptyMessage = styled.p`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.gray600};
+  font-style: italic;
+`;
+
+const BlendSelect = styled.select`
+  width: 100%;
+  height: ${({ theme }) => theme.spacing[8]};
+  background-color: ${({ theme }) => theme.colors.gray800};
+  border: 1px solid ${({ theme }) => theme.colors.gray700};
+  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
+  color: ${({ theme }) => theme.colors.gray300};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  padding: 0 ${({ theme }) => theme.spacing[2]};
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.blue500};
+  }
+`;
+
+const InfoRowsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
+const InfoValue = styled.span`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  color: ${({ theme }) => theme.colors.gray300};
+`;
+
+const InfoValueHighlight = styled(InfoValue)`
+  color: ${({ theme }) => theme.colors.blue400};
+`;
+
+const InfoValueWarning = styled(InfoValue)`
+  color: ${({ theme }) => theme.colors.amber400};
+`;
+
+const TimingInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[1.5]};
+`;
+
+const TimingValue = styled.span`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  color: ${({ theme }) => theme.colors.gray300};
+`;
+
+const TimingUnit = styled.span`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray600};
+`;
+
+const Spacer = styled.div`
+  flex: 1;
+  min-height: ${({ theme }) => theme.spacing[4]};
+`;
+
+// ── Components ──
+
 function Section({
   icon: Icon,
   title,
@@ -224,33 +633,28 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div>
-      <button
-        className="w-full flex items-center gap-2 py-2 px-4 hover:bg-gray-800/40 transition-colors group"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <Icon className="w-3 h-3 text-gray-500 flex-shrink-0" />
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 flex-1 text-left">
-          {title}
-        </span>
-        {open ? (
-          <ChevronDown className="w-3 h-3 text-gray-600" />
-        ) : (
-          <ChevronRight className="w-3 h-3 text-gray-600" />
-        )}
-      </button>
-      {open && <div className="px-4 pb-4 space-y-3">{children}</div>}
+    <SectionContainer>
+      <SectionButton onClick={() => setOpen((v) => !v)}>
+        <SectionIcon>
+          <Icon />
+        </SectionIcon>
+        <SectionTitle>{title}</SectionTitle>
+        <ChevronIcon>
+          {open ? <ChevronDown /> : <ChevronRight />}
+        </ChevronIcon>
+      </SectionButton>
+      {open && <SectionContent>{children}</SectionContent>}
       <Separator className="bg-gray-800" />
-    </div>
+    </SectionContainer>
   );
 }
 
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] text-gray-500 w-16 flex-shrink-0">{label}</span>
-      <div className="flex-1">{children}</div>
-    </div>
+    <FieldRowContainer>
+      <FieldLabel>{label}</FieldLabel>
+      <FieldContent>{children}</FieldContent>
+    </FieldRowContainer>
   );
 }
 
@@ -276,7 +680,7 @@ function NumberInput({
   }, [value]);
 
   return (
-    <div className="relative flex items-center">
+    <NumberInputWrapper>
       <Input
         type="number"
         value={local}
@@ -305,10 +709,8 @@ function NumberInput({
         }}
         className="h-7 bg-gray-800 border-gray-700 text-gray-200 text-xs font-mono pr-6"
       />
-      {suffix && (
-        <span className="absolute right-2 text-[10px] text-gray-500 pointer-events-none">{suffix}</span>
-      )}
-    </div>
+      {suffix && <NumberInputSuffix>{suffix}</NumberInputSuffix>}
+    </NumberInputWrapper>
   );
 }
 
@@ -334,9 +736,9 @@ function XYInputs({
   onToggleLink?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex-1">
-        <span className="text-[9px] text-gray-600 block mb-0.5 ml-0.5">{labelX}</span>
+    <XYInputsContainer>
+      <XYInputGroup>
+        <XYInputLabel>{labelX}</XYInputLabel>
         <NumberInput
           value={x}
           onChange={(v) => {
@@ -345,22 +747,19 @@ function XYInputs({
           }}
           suffix={suffix}
         />
-      </div>
+      </XYInputGroup>
       {onToggleLink && (
-        <button
+        <LinkButton
           onClick={onToggleLink}
-          className="mt-4 p-1 hover:bg-gray-700 rounded transition-colors flex-shrink-0"
           title={linked ? 'Unlink X/Y' : 'Link X/Y'}
         >
-          {linked ? (
-            <Link2 className="w-3 h-3 text-blue-400" />
-          ) : (
-            <Unlink2 className="w-3 h-3 text-gray-600" />
-          )}
-        </button>
+          <LinkIcon $linked={linked}>
+            {linked ? <Link2 /> : <Unlink2 />}
+          </LinkIcon>
+        </LinkButton>
       )}
-      <div className="flex-1">
-        <span className="text-[9px] text-gray-600 block mb-0.5 ml-0.5">{labelY}</span>
+      <XYInputGroup>
+        <XYInputLabel>{labelY}</XYInputLabel>
         <NumberInput
           value={y}
           onChange={(v) => {
@@ -369,8 +768,8 @@ function XYInputs({
           }}
           suffix={suffix}
         />
-      </div>
-    </div>
+      </XYInputGroup>
+    </XYInputsContainer>
   );
 }
 
@@ -394,7 +793,6 @@ export function RightPanel({
   const opacity = getPropValue(transform?.o);
   const fillShape = findFillShape(selectedLayer?.shapes);
   const strokeShape = findStrokeShape(selectedLayer?.shapes);
-  const fillColor = fillShape?.c ? getPropValue(fillShape.c) : null;
   const fillColorArr = fillShape?.c?.a === 0 ? (fillShape.c.k as number[]) : null;
   const fillOpacity = fillShape?.o ? getPropValue(fillShape.o) : 100;
   const strokeColorArr = strokeShape?.c?.a === 0 ? (strokeShape.c.k as number[]) : null;
@@ -421,12 +819,12 @@ export function RightPanel({
 
   if (!selectedLayer || selectedLayerIndex === null) {
     return (
-      <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col items-center justify-center gap-3">
-        <Layers className="w-10 h-10 text-gray-700" />
-        <p className="text-gray-600 text-xs text-center leading-relaxed px-6">
+      <EmptyStateContainer>
+        <EmptyStateIcon />
+        <EmptyStateText>
           Select a layer in the panel to inspect and edit its properties
-        </p>
-      </div>
+        </EmptyStateText>
+      </EmptyStateContainer>
     );
   }
 
@@ -437,67 +835,67 @@ export function RightPanel({
 
   if (isLocked) {
     return (
-      <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col">
-        <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-white truncate">
+      <LockedStateContainer>
+        <Header>
+          <HeaderContent>
+            <HeaderInfo>
+              <LayerName>
                 {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
-              </h3>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-gray-500">{layerTypeLabel} Layer</span>
-                <span className="text-[10px] text-gray-600">#{selectedLayer.ind}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+              </LayerName>
+              <LayerMeta>
+                <LayerType>{layerTypeLabel} Layer</LayerType>
+                <LayerIndex>#{selectedLayer.ind}</LayerIndex>
+              </LayerMeta>
+            </HeaderInfo>
+          </HeaderContent>
+        </Header>
         
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6">
-          <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <LockedStateContent>
+          <LockedIconWrapper>
+            <LockedIcon fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-medium text-amber-400 mb-1">Layer is Locked</p>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            </LockedIcon>
+          </LockedIconWrapper>
+          <LockedTextContainer>
+            <LockedTitle>Layer is Locked</LockedTitle>
+            <LockedDescription>
               This layer cannot be edited. Click the lock icon in the layer panel to unlock it.
-            </p>
-          </div>
-        </div>
-      </div>
+            </LockedDescription>
+          </LockedTextContainer>
+        </LockedStateContent>
+      </LockedStateContainer>
     );
   }
 
   return (
-    <div className="w-[300px] bg-gray-900 border-l border-gray-800 flex flex-col h-full overflow-y-auto">
-      <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-white truncate">
+    <PanelContainer>
+      <Header>
+        <HeaderContent>
+          <HeaderInfo>
+            <LayerName>
               {selectedLayer.nm || `Layer ${selectedLayerIndex}`}
-            </h3>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-gray-500">{layerTypeLabel} Layer</span>
-              <span className="text-[10px] text-gray-600">#{selectedLayer.ind}</span>
+            </LayerName>
+            <LayerMeta>
+              <LayerType>{layerTypeLabel} Layer</LayerType>
+              <LayerIndex>#{selectedLayer.ind}</LayerIndex>
               {selectedLayer.parent !== undefined && (
-                <span className="text-[10px] text-blue-400/70">↳ {selectedLayer.parent}</span>
+                <LayerParent>↳ {selectedLayer.parent}</LayerParent>
               )}
-            </div>
-          </div>
+            </LayerMeta>
+          </HeaderInfo>
           {(isAnimated(transform?.p) || isAnimated(transform?.r) || isAnimated(transform?.s)) && (
-            <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 rounded px-1.5 py-0.5 flex-shrink-0">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-[9px] text-amber-400 uppercase tracking-wide">Animated</span>
-            </div>
+            <AnimatedBadge>
+              <AnimatedDot />
+              <AnimatedText>Animated</AnimatedText>
+            </AnimatedBadge>
           )}
-        </div>
-      </div>
+        </HeaderContent>
+      </Header>
       <Section icon={Move} title="Transform">
-        <div>
-          <span className="text-[10px] text-gray-600 block mb-1.5">
-            Position {isAnimated(transform?.p) && <span className="text-amber-400 ml-1">◆</span>}
-          </span>
+        <PropertyGroup>
+          <PropertyLabel>
+            Position {isAnimated(transform?.p) && <AnimatedIndicator>◆</AnimatedIndicator>}
+          </PropertyLabel>
           <XYInputs
             x={posX}
             y={posY}
@@ -505,9 +903,9 @@ export function RightPanel({
             onChangeY={(v) => updateTransform('p', v, 1)}
             suffix="px"
           />
-        </div>
-        <div>
-          <span className="text-[10px] text-gray-600 block mb-1.5">Anchor Point</span>
+        </PropertyGroup>
+        <PropertyGroup>
+          <PropertyLabel>Anchor Point</PropertyLabel>
           <XYInputs
             x={anchorX}
             y={anchorY}
@@ -515,11 +913,11 @@ export function RightPanel({
             onChangeY={(v) => updateTransform('a', v, 1)}
             suffix="px"
           />
-        </div>
-        <div>
-          <span className="text-[10px] text-gray-600 block mb-1.5">
-            Scale {isAnimated(transform?.s) && <span className="text-amber-400 ml-1">◆</span>}
-          </span>
+        </PropertyGroup>
+        <PropertyGroup>
+          <PropertyLabel>
+            Scale {isAnimated(transform?.s) && <AnimatedIndicator>◆</AnimatedIndicator>}
+          </PropertyLabel>
           <XYInputs
             x={scaleX}
             y={scaleY}
@@ -529,7 +927,7 @@ export function RightPanel({
             linked={linkedScale}
             onToggleLink={() => setLinkedScale((v) => !v)}
           />
-        </div>
+        </PropertyGroup>
         <FieldRow label="Rotation">
           <NumberInput
             value={rotation}
@@ -538,13 +936,13 @@ export function RightPanel({
             step={0.1}
           />
         </FieldRow>
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] text-gray-600">
-              Opacity {isAnimated(transform?.o) && <span className="text-amber-400 ml-1">◆</span>}
-            </span>
-            <span className="text-[10px] font-mono text-gray-400">{Math.round(opacity)}%</span>
-          </div>
+        <SliderContainer>
+          <SliderHeader>
+            <SliderLabel>
+              Opacity {isAnimated(transform?.o) && <AnimatedIndicator>◆</AnimatedIndicator>}
+            </SliderLabel>
+            <SliderValue>{Math.round(opacity)}%</SliderValue>
+          </SliderHeader>
           <Slider
             value={[opacity]}
             onValueChange={([v]) => updateTransform('o', v)}
@@ -553,29 +951,26 @@ export function RightPanel({
             step={1}
             className="w-full"
           />
-        </div>
+        </SliderContainer>
       </Section>
       {isShapeLayer && (
         <Section icon={Droplets} title="Fill" defaultOpen={!!fillShape}>
           {fillShape ? (
             <>
-              <div>
-                <span className="text-[10px] text-gray-600 block mb-1.5">Color</span>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <input
-                      type="color"
-                      value={fillColorArr ? lottieColorToHex(fillColorArr) : '#000000'}
-                      onChange={(e) => {
-                        const lottieColor = hexToLottieColor(e.target.value);
-                        if (selectedLayer?.shapes) {
-                          const updatedShapes = updateFillColor(selectedLayer.shapes, lottieColor);
-                          updateLayerProp('shapes', updatedShapes);
-                        }
-                      }}
-                      className="w-8 h-7 bg-transparent border border-gray-700 rounded cursor-pointer overflow-hidden"
-                    />
-                  </div>
+              <PropertyGroup>
+                <PropertyLabel>Color</PropertyLabel>
+                <ColorInputContainer>
+                  <ColorPicker
+                    type="color"
+                    value={fillColorArr ? lottieColorToHex(fillColorArr) : '#000000'}
+                    onChange={(e) => {
+                      const lottieColor = hexToLottieColor(e.target.value);
+                      if (selectedLayer?.shapes) {
+                        const updatedShapes = updateFillColor(selectedLayer.shapes, lottieColor);
+                        updateLayerProp('shapes', updatedShapes);
+                      }
+                    }}
+                  />
                   <Input
                     type="text"
                     value={fillColorArr ? lottieColorToHex(fillColorArr) : '#000000'}
@@ -590,13 +985,13 @@ export function RightPanel({
                     }}
                     className="flex-1 h-7 bg-gray-800 border-gray-700 text-gray-300 text-xs font-mono"
                   />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[10px] text-gray-600">Opacity</span>
-                  <span className="text-[10px] font-mono text-gray-400">{Math.round(fillOpacity)}%</span>
-                </div>
+                </ColorInputContainer>
+              </PropertyGroup>
+              <SliderContainer>
+                <SliderHeader>
+                  <SliderLabel>Opacity</SliderLabel>
+                  <SliderValue>{Math.round(fillOpacity)}%</SliderValue>
+                </SliderHeader>
                 <Slider
                   value={[fillOpacity]}
                   onValueChange={([v]) => {
@@ -610,10 +1005,10 @@ export function RightPanel({
                   step={1}
                   className="w-full"
                 />
-              </div>
+              </SliderContainer>
             </>
           ) : (
-            <p className="text-[11px] text-gray-600 italic">No fill found in this layer</p>
+            <EmptyMessage>No fill found in this layer</EmptyMessage>
           )}
         </Section>
       )}
@@ -621,10 +1016,10 @@ export function RightPanel({
         <Section icon={PenLine} title="Stroke" defaultOpen={!!strokeShape}>
           {strokeShape ? (
             <>
-              <div>
-                <span className="text-[10px] text-gray-600 block mb-1.5">Color</span>
-                <div className="flex items-center gap-2">
-                  <input
+              <PropertyGroup>
+                <PropertyLabel>Color</PropertyLabel>
+                <ColorInputContainer>
+                  <ColorPicker
                     type="color"
                     value={strokeColorArr ? lottieColorToHex(strokeColorArr) : '#ffffff'}
                     onChange={(e) => {
@@ -634,7 +1029,6 @@ export function RightPanel({
                         updateLayerProp('shapes', updatedShapes);
                       }
                     }}
-                    className="w-8 h-7 bg-transparent border border-gray-700 rounded cursor-pointer"
                   />
                   <Input
                     type="text"
@@ -650,13 +1044,13 @@ export function RightPanel({
                     }}
                     className="flex-1 h-7 bg-gray-800 border-gray-700 text-gray-300 text-xs font-mono"
                   />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[10px] text-gray-600">Width</span>
-                  <span className="text-[10px] font-mono text-gray-400">{strokeWidth}px</span>
-                </div>
+                </ColorInputContainer>
+              </PropertyGroup>
+              <SliderContainer>
+                <SliderHeader>
+                  <SliderLabel>Width</SliderLabel>
+                  <SliderValue>{strokeWidth}px</SliderValue>
+                </SliderHeader>
                 <Slider
                   value={[strokeWidth]}
                   onValueChange={([v]) => {
@@ -670,12 +1064,12 @@ export function RightPanel({
                   step={0.5}
                   className="w-full"
                 />
-              </div>
-              <div>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[10px] text-gray-600">Opacity</span>
-                  <span className="text-[10px] font-mono text-gray-400">{Math.round(strokeOpacity)}%</span>
-                </div>
+              </SliderContainer>
+              <SliderContainer>
+                <SliderHeader>
+                  <SliderLabel>Opacity</SliderLabel>
+                  <SliderValue>{Math.round(strokeOpacity)}%</SliderValue>
+                </SliderHeader>
                 <Slider
                   value={[strokeOpacity]}
                   onValueChange={([v]) => {
@@ -689,87 +1083,86 @@ export function RightPanel({
                   step={1}
                   className="w-full"
                 />
-              </div>
+              </SliderContainer>
             </>
           ) : (
-            <p className="text-[11px] text-gray-600 italic">No stroke found in this layer</p>
+            <EmptyMessage>No stroke found in this layer</EmptyMessage>
           )}
         </Section>
       )}
       <Section icon={Blend} title="Blending" defaultOpen={false}>
         <FieldRow label="Mode">
-          <select
+          <BlendSelect
             value={selectedLayer.bm ?? 0}
             onChange={(e) => updateLayerProp('bm', parseInt(e.target.value))}
-            className="w-full h-7 bg-gray-800 border border-gray-700 rounded text-gray-300 text-xs px-2 cursor-pointer"
           >
             {Object.entries(BLEND_MODES).map(([val, label]) => (
               <option key={val} value={val}>
                 {label}
               </option>
             ))}
-          </select>
+          </BlendSelect>
         </FieldRow>
       </Section>
       <Section icon={Clock} title="Timing" defaultOpen={false}>
-        <div className="space-y-2">
+        <InfoRowsContainer>
           <FieldRow label="In Point">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-gray-300">{selectedLayer.ip}</span>
-              <span className="text-[10px] text-gray-600">
+            <TimingInfo>
+              <TimingValue>{selectedLayer.ip}</TimingValue>
+              <TimingUnit>
                 f ({animation ? (selectedLayer.ip / animation.fr).toFixed(2) : '—'}s)
-              </span>
-            </div>
+              </TimingUnit>
+            </TimingInfo>
           </FieldRow>
           <FieldRow label="Out Point">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-gray-300">{selectedLayer.op}</span>
-              <span className="text-[10px] text-gray-600">
+            <TimingInfo>
+              <TimingValue>{selectedLayer.op}</TimingValue>
+              <TimingUnit>
                 f ({animation ? (selectedLayer.op / animation.fr).toFixed(2) : '—'}s)
-              </span>
-            </div>
+              </TimingUnit>
+            </TimingInfo>
           </FieldRow>
           <FieldRow label="Start">
-            <span className="text-xs font-mono text-gray-300">{selectedLayer.st}</span>
+            <InfoValue>{selectedLayer.st}</InfoValue>
           </FieldRow>
           <FieldRow label="Duration">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono text-gray-300">
+            <TimingInfo>
+              <TimingValue>
                 {selectedLayer.op - selectedLayer.ip}
-              </span>
-              <span className="text-[10px] text-gray-600">frames</span>
-            </div>
+              </TimingValue>
+              <TimingUnit>frames</TimingUnit>
+            </TimingInfo>
           </FieldRow>
-        </div>
+        </InfoRowsContainer>
       </Section>
       <Section icon={Info} title="Layer Info" defaultOpen={false}>
-        <div className="space-y-2">
+        <InfoRowsContainer>
           <FieldRow label="Index">
-            <span className="text-xs font-mono text-gray-300">{selectedLayer.ind}</span>
+            <InfoValue>{selectedLayer.ind}</InfoValue>
           </FieldRow>
           {selectedLayer.parent !== undefined && (
             <FieldRow label="Parent">
-              <span className="text-xs font-mono text-blue-400">{selectedLayer.parent}</span>
+              <InfoValueHighlight>{selectedLayer.parent}</InfoValueHighlight>
             </FieldRow>
           )}
           <FieldRow label="3D">
-            <span className="text-xs font-mono text-gray-300">
+            <InfoValue>
               {selectedLayer.ddd === 1 ? 'Yes' : 'No'}
-            </span>
+            </InfoValue>
           </FieldRow>
           <FieldRow label="Shapes">
-            <span className="text-xs font-mono text-gray-300">
+            <InfoValue>
               {selectedLayer.shapes?.length ?? 0}
-            </span>
+            </InfoValue>
           </FieldRow>
           {selectedLayer.sr !== undefined && selectedLayer.sr !== 1 && (
             <FieldRow label="Stretch">
-              <span className="text-xs font-mono text-amber-400">{selectedLayer.sr}x</span>
+              <InfoValueWarning>{selectedLayer.sr}x</InfoValueWarning>
             </FieldRow>
           )}
-        </div>
+        </InfoRowsContainer>
       </Section>
-      <div className="flex-1 min-h-4" />
-    </div>
+      <Spacer />
+    </PanelContainer>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import styled from 'styled-components';
 import { useMachine } from '@xstate/react';
 import { useUIStore } from './stores/uiStore';
 import { saveToLocalStorage } from './utils/localStorage';
@@ -10,6 +11,22 @@ import { RightPanel } from './app/components/RightPanel';
 import { BottomTimeline } from './app/components/BottomTimeLine';
 import { useLottieHandlers } from './hooks/useLottieHandlers';
 import { lottieStateMachine } from './machines/lottieStateMachine';
+
+const AppContainer = styled.div`
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background-color: ${({ theme }) => theme.colors.gray950};
+  color: ${({ theme }) => theme.colors.white};
+  overflow: hidden;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+`;
 
 function App() {
   const [state, send] = useMachine(lottieStateMachine);
@@ -59,7 +76,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-gray-950 text-white overflow-hidden">
+    <AppContainer>
       <TopNavBar
         fileName={fileName}
         renderMode={renderMode}
@@ -70,7 +87,7 @@ function App() {
         onReset={handlers.handleReset}
         hasAnimation={currentAnimation !== null}
       />
-      <div className="flex-1 flex overflow-hidden">
+      <MainContent>
         <LeftPanel
           animation={currentAnimation}
           selectedLayerIndex={selectedLayerIndex}
@@ -99,7 +116,7 @@ function App() {
           animation={currentAnimation}
           onSend={send}
         />
-      </div>
+      </MainContent>
       <BottomTimeline
         animation={currentAnimation}
         currentFrame={currentFrame}
@@ -109,7 +126,7 @@ function App() {
         isPlaying={isPlaying}   
         onLayerSelect={idx => send({ type: 'SELECT_LAYER', layerIndex: idx })}
       />
-    </div>
+    </AppContainer>
   )
 }
 

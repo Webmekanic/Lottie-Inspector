@@ -1,30 +1,85 @@
 "use client";
 
 import * as React from "react";
+import styled from "styled-components";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
+import { theme } from "../../../styles/theme";
 
-import { cn } from "./utils";
+const StyledSwitchRoot = styled(SwitchPrimitive.Root)`
+  display: inline-flex;
+  height: 1.15rem;
+  width: ${theme.spacing[8]};
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: ${theme.borderRadius.full};
+  border: 1px solid transparent;
+  transition: all ${theme.transitions.DEFAULT};
+  outline: none;
 
-function Switch({
-  className,
-  ...props
-}: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+  &[data-state="checked"] {
+    background-color: ${theme.colors.blue500};
+  }
+
+  &[data-state="unchecked"] {
+    background-color: ${theme.colors.gray700};
+  }
+
+  &:focus-visible {
+    border-color: ${theme.colors.blue500};
+    box-shadow: 0 0 0 3px ${theme.colors.blue500}33;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &[data-state="unchecked"] {
+      background-color: ${theme.colors.gray700}CC;
+    }
+  }
+`;
+
+const StyledSwitchThumb = styled(SwitchPrimitive.Thumb)`
+  pointer-events: none;
+  display: block;
+  width: ${theme.spacing[4]};
+  height: ${theme.spacing[4]};
+  border-radius: ${theme.borderRadius.full};
+  background-color: ${theme.colors.white};
+  box-shadow: 0 0 0 0 transparent;
+  transition: transform ${theme.transitions.DEFAULT};
+
+  &[data-state="checked"] {
+    transform: translateX(calc(100% - 2px));
+  }
+
+  &[data-state="unchecked"] {
+    transform: translateX(0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &[data-state="unchecked"] {
+      background-color: ${theme.colors.gray100};
+    }
+
+    &[data-state="checked"] {
+      background-color: ${theme.colors.white};
+    }
+  }
+`;
+
+interface SwitchProps extends React.ComponentProps<typeof SwitchPrimitive.Root> {}
+
+function Switch({ ...props }: SwitchProps) {
   return (
-    <SwitchPrimitive.Root
+    <StyledSwitchRoot
       data-slot="switch"
-      className={cn(
-        "peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-switch-background focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
       {...props}
     >
-      <SwitchPrimitive.Thumb
-        data-slot="switch-thumb"
-        className={cn(
-          "bg-card dark:data-[state=unchecked]:bg-card-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0",
-        )}
-      />
-    </SwitchPrimitive.Root>
+      <StyledSwitchThumb data-slot="switch-thumb" />
+    </StyledSwitchRoot>
   );
 }
 

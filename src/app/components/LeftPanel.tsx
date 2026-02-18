@@ -1,8 +1,278 @@
+import styled from 'styled-components';
 import { Search, ChevronRight, ChevronDown, Eye, EyeOff, Lock, Unlock, Box, Image, Type, Layers, CircleDot, FileCode } from 'lucide-react';
-import { Input } from './ui/input';
 import { useState, useMemo } from 'react';
 import { LottieLayer, LottieAnimation, LottieShape } from '../../types/lottie';
 import { useUIStore } from '../../stores/uiStore';
+
+const PanelContainer = styled.div`
+  width: 280px;
+  background-color: ${({ theme }) => theme.colors.gray900};
+  border-right: 1px solid ${({ theme }) => theme.colors.gray800};
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  user-select: none;
+`;
+
+const Header = styled.div`
+  padding: ${({ theme }) => `${theme.spacing[3]} ${theme.spacing[3]} ${theme.spacing[2]}`};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SectionTitle = styled.span`
+  font-size: 11px;
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${({ theme }) => theme.colors.gray500};
+`;
+
+const Stats = styled.span`
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.gray600};
+`;
+
+const SearchContainer = styled.div`
+  position: relative;
+`;
+
+const SearchIcon = styled(Search)`
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: ${({ theme }) => theme.colors.gray500};
+  pointer-events: none;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: ${({ theme }) => `${theme.spacing[1.5]} ${theme.spacing[2]} ${theme.spacing[1.5]} ${theme.spacing[8]}`};
+  background-color: ${({ theme }) => theme.colors.gray800};
+  border: 1px solid ${({ theme }) => theme.colors.gray700};
+  color: ${({ theme }) => theme.colors.gray300};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  height: 28px;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.gray600};
+  }
+
+  &:focus {
+    outline: 2px solid ${({ theme }) => theme.colors.blue500};
+    outline-offset: 0;
+  }
+`;
+
+const CompositionInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => `${theme.spacing[1.5]} ${theme.spacing[3]}`};
+  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+`;
+
+const CompositionName = styled.span`
+  font-size: 11px;
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  color: ${({ theme }) => theme.colors.gray500};
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const CompositionMeta = styled.span`
+  font-size: 9px;
+  color: ${({ theme }) => theme.colors.gray600};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+const LayersContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: ${({ theme }) => theme.spacing[2]};
+  color: ${({ theme }) => theme.colors.gray600};
+`;
+
+const EmptyText = styled.span`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+`;
+
+const LayerList = styled.div`
+  padding: ${({ theme }) => theme.spacing[1]} 0;
+`;
+
+const LayerRowContainer = styled.div<{ $isSelected: boolean; $isVisible: boolean; $isLocked: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0 6px 10px;
+  border-left: 2px solid ${({ $isSelected, theme }) => 
+    $isSelected ? theme.colors.blue500 : 'transparent'};
+  background-color: ${({ $isSelected }) => 
+    $isSelected ? 'rgba(59, 130, 246, 0.15)' : 'transparent'};
+  opacity: ${({ $isVisible }) => $isVisible ? 1 : 0.4};
+  cursor: ${({ $isLocked }) => $isLocked ? 'not-allowed' : 'pointer'};
+  transition: background-color ${({ theme }) => theme.transitions.DEFAULT};
+
+  &:hover {
+    background-color: ${({ $isSelected }) => 
+      $isSelected ? 'rgba(59, 130, 246, 0.15)' : 'rgba(39, 39, 42, 0.6)'};
+  }
+`;
+
+const ExpandButton = styled.button`
+  padding: 2px;
+  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
+  flex-shrink: 0;
+  transition: background-color ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.gray700};
+  }
+`;
+
+const ExpandSpacer = styled.div`
+  width: 16px;
+  flex-shrink: 0;
+`;
+
+const LayerName = styled.span<{ $isSelected: boolean }>`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  color: ${({ $isSelected, theme }) => $isSelected ? theme.colors.blue400 : theme.colors.gray300};
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const LayerTypeLabel = styled.span<{ $color: string }>`
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  color: ${({ $color }) => $color};
+`;
+
+const IconButtonGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: ${({ theme }) => theme.spacing[1]};
+  flex-shrink: 0;
+`;
+
+const IconButton = styled.button<{ $visible?: boolean }>`
+  padding: 2px;
+  border-radius: ${({ theme }) => theme.borderRadius.DEFAULT};
+  transition: all ${({ theme }) => theme.transitions.DEFAULT};
+  opacity: ${({ $visible }) => $visible ? 1 : 0};
+
+  .group:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.gray700};
+  }
+`;
+
+const ShapeTreeBorder = styled.div`
+  border-left: 1px solid rgba(63, 63, 70, 0.6);
+  margin-left: 22px;
+`;
+
+const ShapeNodeContainer = styled.div<{ $depth: number }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  padding-left: ${({ $depth }) => $depth * 14 + 12}px;
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.gray500};
+  cursor: default;
+  user-select: none;
+  transition: all ${({ theme }) => theme.transitions.DEFAULT};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.gray300};
+    background-color: rgba(39, 39, 42, 0.4);
+  }
+`;
+
+const ShapeNodeSpacer = styled.div`
+  width: 16px;
+  flex-shrink: 0;
+`;
+
+const ShapeNodeName = styled.span`
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+`;
+
+const ShapeNodeType = styled.span`
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${({ theme }) => theme.colors.gray600};
+  margin-right: ${({ theme }) => theme.spacing[2]};
+  flex-shrink: 0;
+`;
+
+const SelectedLayerFooter = styled.div`
+  border-top: 1px solid ${({ theme }) => theme.colors.gray800};
+  padding: ${({ theme }) => `${theme.spacing[2]} ${theme.spacing[3]}`};
+  background-color: rgba(24, 24, 27, 0.8);
+`;
+
+const FooterContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
+const FooterLayerName = styled.span`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.gray400};
+  font-family: ${({ theme }) => theme.typography.fontFamily.mono};
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const FooterIndex = styled.span`
+  font-size: 9px;
+  color: ${({ theme }) => theme.colors.gray600};
+  text-transform: uppercase;
+`;
 
 interface LeftPanelProps {
   animation: LottieAnimation | null;
@@ -28,13 +298,13 @@ const LAYER_TYPE_LABELS: Record<number, string> = {
   5: 'Text',
 };
 
-const LAYER_TYPE_COLORS: Record<number, string> = {
-  0: 'text-purple-400',
-  1: 'text-yellow-400',
-  2: 'text-green-400',
-  3: 'text-gray-400',
-  4: 'text-blue-400',
-  5: 'text-pink-400',
+const LAYER_TYPE_COLOR_MAP: Record<number, string> = {
+  0: '#c084fc',
+  1: '#fbbf24',
+  2: '#4ade80',
+  3: '#a1a1aa',
+  4: '#60a5fa',
+  5: '#c084fc',
 };
 
 const SHAPE_TYPE_LABELS: Record<string, string> = {
@@ -53,20 +323,27 @@ const SHAPE_TYPE_LABELS: Record<string, string> = {
   mm: 'Merge',
 };
 
+const StyledIconWrapper = styled.div`
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const LayerTypeIcon = ({ type }: { type: number }) => {
-  const cls = 'w-3 h-3 flex-shrink-0';
+  const color = LAYER_TYPE_COLOR_MAP[type] || '#a1a1aa';
+  
   switch (type) {
-    case 0: return <Layers className={`${cls} text-purple-400`} />;
-    case 2: return <Image className={`${cls} text-green-400`} />;
-    case 4: return <Box className={`${cls} text-blue-400`} />;
-    case 5: return <Type className={`${cls} text-pink-400`} />;
-    default: return <CircleDot className={`${cls} text-gray-400`} />;
+    case 0: return <StyledIconWrapper><Layers size={12} color={color} /></StyledIconWrapper>;
+    case 2: return <StyledIconWrapper><Image size={12} color={color} /></StyledIconWrapper>;
+    case 4: return <StyledIconWrapper><Box size={12} color={color} /></StyledIconWrapper>;
+    case 5: return <StyledIconWrapper><Type size={12} color={color} /></StyledIconWrapper>;
+    default: return <StyledIconWrapper><CircleDot size={12} color={color} /></StyledIconWrapper>;
   }
 };
 
-/**
- * Recursively convert Lottie shape array into tree nodes for rendering.
- */
 function buildShapeTree(shapes: LottieShape[], parentId: string): ShapeTreeNode[] {
   return shapes.map((shape, idx) => {
     const id = `${parentId}-s${idx}`;
@@ -79,9 +356,6 @@ function buildShapeTree(shapes: LottieShape[], parentId: string): ShapeTreeNode[
   });
 }
 
-/**
- * Recursive shape node renderer.
- */
 function ShapeNode({
   node,
   depth,
@@ -98,32 +372,24 @@ function ShapeNode({
 
   return (
     <div>
-      <div
-        className="flex items-center gap-1.5 py-1 text-xs text-gray-500 hover:text-gray-300 hover:bg-gray-800/40 transition-colors cursor-default select-none"
-        style={{ paddingLeft: `${depth * 14 + 12}px` }}
-      >
+      <ShapeNodeContainer $depth={depth}>
         {hasChildren ? (
-          <button
-            onClick={() => onToggle(node.id)}
-            className="p-0.5 hover:bg-gray-700 rounded flex-shrink-0"
-          >
+          <ExpandButton onClick={() => onToggle(node.id)}>
             {isExpanded ? (
-              <ChevronDown className="w-2.5 h-2.5 text-gray-500" />
+              <ChevronDown size={10} color="#71717a" />
             ) : (
-              <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
+              <ChevronRight size={10} color="#71717a" />
             )}
-          </button>
+          </ExpandButton>
         ) : (
-          <div className="w-4 flex-shrink-0" />
+          <ShapeNodeSpacer />
         )}
 
-        <FileCode className="w-2.5 h-2.5 flex-shrink-0 text-gray-600" />
+        <FileCode size={10} color="#52525b" style={{ flexShrink: 0 }} />
 
-        <span className="flex-1 truncate font-mono">{node.name}</span>
-        <span className="text-[9px] uppercase tracking-wide text-gray-600 mr-2 flex-shrink-0">
-          {node.type}
-        </span>
-      </div>
+        <ShapeNodeName>{node.name}</ShapeNodeName>
+        <ShapeNodeType>{node.type}</ShapeNodeType>
+      </ShapeNodeContainer>
 
       {hasChildren && isExpanded &&
         node.children!.map((child) => (
@@ -139,9 +405,6 @@ function ShapeNode({
   );
 }
 
-/**
- * Single layer row + optional expanded shape tree.
- */
 function LayerRow({
   layer,
   index,
@@ -176,77 +439,62 @@ function LayerRow({
   );
 
   return (
-    <div>
-      <div
-        className={`
-          group flex items-center gap-1.5 py-1.5 transition-colors
-          ${isSelected
-            ? 'bg-blue-600/15 border-l-2 border-blue-500'
-            : 'border-l-2 border-transparent hover:bg-gray-800/60'
-          }
-          ${!isVisible ? 'opacity-40' : ''}
-          ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}
-        `}
-        style={{ paddingLeft: '10px' }}
+    <div className="group">
+      <LayerRowContainer
+        $isSelected={isSelected}
+        $isVisible={isVisible}
+        $isLocked={isLocked}
         onClick={() => !isLocked && onLayerSelect(isSelected ? null : index)}
       >
         {hasShapes ? (
-          <button
+          <ExpandButton
             onClick={(e) => { e.stopPropagation(); onToggleLayer(index); }}
-            className="p-0.5 hover:bg-gray-700 rounded flex-shrink-0"
           >
             {isExpanded ? (
-              <ChevronDown className="w-3 h-3 text-gray-400" />
+              <ChevronDown size={12} color="#a1a1aa" />
             ) : (
-              <ChevronRight className="w-3 h-3 text-gray-400" />
+              <ChevronRight size={12} color="#a1a1aa" />
             )}
-          </button>
+          </ExpandButton>
         ) : (
-          <div className="w-4 flex-shrink-0" />
+          <ExpandSpacer />
         )}
         <LayerTypeIcon type={layer.ty} />
-        <span className={`text-xs font-mono flex-1 truncate ${isSelected ? 'text-blue-300' : 'text-gray-300'}`}>
+        <LayerName $isSelected={isSelected}>
           {layer.nm || `Layer ${index}`}
-        </span>
-        <span className={`text-[9px] uppercase tracking-wide flex-shrink-0 ${LAYER_TYPE_COLORS[layer.ty] ?? 'text-gray-500'}`}>
+        </LayerName>
+        <LayerTypeLabel $color={LAYER_TYPE_COLOR_MAP[layer.ty] || '#71717a'}>
           {LAYER_TYPE_LABELS[layer.ty] ?? '?'}
-        </span>
-        <div
-          className="flex items-center gap-0.5 ml-1 flex-shrink-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
+        </LayerTypeLabel>
+        <IconButtonGroup onClick={(e) => e.stopPropagation()}>
+          <IconButton
             onClick={() => onToggleVisibility(index)}
-            className={`p-0.5 rounded transition-colors hover:bg-gray-700 ${
-              isVisible ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-            }`}
+            $visible={!isVisible}
             title={isVisible ? 'Hide layer' : 'Show layer'}
           >
             {isVisible ? (
-              <Eye className="w-3 h-3 text-gray-400 hover:text-gray-200" />
+              <Eye size={12} color="#a1a1aa" />
             ) : (
-              <EyeOff className="w-3 h-3 text-red-400 hover:text-red-300" />
+              <EyeOff size={12} color="#f87171" />
             )}
-          </button>
+          </IconButton>
 
-          <button
+          <IconButton
             onClick={() => onToggleLock(index)}
-            className={`p-0.5 rounded transition-colors hover:bg-gray-700 ${
-              isLocked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-            }`}
+            $visible={isLocked}
             title={isLocked ? 'Unlock layer' : 'Lock layer'}
           >
             {isLocked ? (
-              <Lock className="w-3 h-3 text-amber-400 hover:text-amber-300" />
+              <Lock size={12} color="#fbbf24" />
             ) : (
-              <Unlock className="w-3 h-3 text-gray-400 hover:text-gray-200" />
+              <Unlock size={12} color="#a1a1aa" />
             )}
-          </button>
-        </div>
-      </div>
+          </IconButton>
+        </IconButtonGroup>
+      </LayerRowContainer>
 
       {hasShapes && isExpanded && (
-        <div className="border-l border-gray-700/60 ml-[22px]">
+        <ShapeTreeBorder>
           {shapeTree.map((node) => (
             <ShapeNode
               key={node.id}
@@ -256,7 +504,7 @@ function LayerRow({
               onToggle={onToggleShapeNode}
             />
           ))}
-        </div>
+        </ShapeTreeBorder>
       )}
     </div>
   );
@@ -290,7 +538,6 @@ export function LeftPanel({
     });
   };
 
-  // Filtered layer list (preserves original indices for correct selection/dispatch)
   const filteredLayers = useMemo(() => {
     if (!animation?.layers) return [];
     const q = searchQuery.trim().toLowerCase();
@@ -300,7 +547,6 @@ export function LeftPanel({
       .filter(({ layer }) => layer.nm?.toLowerCase().includes(q));
   }, [animation?.layers, searchQuery]);
 
-  // Stats for the header
   const stats = useMemo(() => {
     if (!animation) return null;
     return {
@@ -311,52 +557,49 @@ export function LeftPanel({
   }, [animation]);
 
   return (
-    <div className="w-[280px] bg-gray-900 border-r border-gray-800 flex flex-col h-full select-none">
-      <div className="px-3 pt-3 pb-2 border-b border-gray-800 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
-            Layers
-          </span>
+    <PanelContainer>
+      <Header>
+        <HeaderRow>
+          <SectionTitle>Layers</SectionTitle>
           {stats && (
-            <span className="text-[10px] text-gray-600">
+            <Stats>
               {stats.total} layers · {stats.shapes} shapes
-            </span>
+            </Stats>
           )}
-        </div>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
-          <Input
+        </HeaderRow>
+        <SearchContainer>
+          <SearchIcon />
+          <SearchInput
             type="text"
             placeholder="Search layers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 bg-gray-800 border-gray-700 text-gray-300 placeholder:text-gray-600 h-7 text-xs rounded-md"
           />
-        </div>
-      </div>
+        </SearchContainer>
+      </Header>
       {animation && (
-        <div className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-800/50">
-          <Layers className="w-3 h-3 text-gray-500 flex-shrink-0" />
-          <span className="text-[11px] font-mono text-gray-500 truncate flex-1">
+        <CompositionInfo>
+          <Layers size={12} color="#71717a" style={{ flexShrink: 0 }} />
+          <CompositionName>
             {animation.nm || 'Composition'}
-          </span>
-          <span className="text-[9px] text-gray-600 uppercase tracking-wide">
+          </CompositionName>
+          <CompositionMeta>
             {animation.fr}fps · {animation.op - animation.ip}f
-          </span>
-        </div>
+          </CompositionMeta>
+        </CompositionInfo>
       )}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+      <LayersContainer>
         {!animation ? (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-600">
-            <FileCode className="w-8 h-8 opacity-30" />
-            <span className="text-xs">No animation loaded</span>
-          </div>
+          <EmptyState>
+            <FileCode size={32} style={{ opacity: 0.3 }} />
+            <EmptyText>No animation loaded</EmptyText>
+          </EmptyState>
         ) : filteredLayers.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-600 text-xs">
-            No layers match "{searchQuery}"
-          </div>
+          <EmptyState>
+            <EmptyText>No layers match "{searchQuery}"</EmptyText>
+          </EmptyState>
         ) : (
-          <div className="py-1">
+          <LayerList>
             {filteredLayers.map(({ layer, index }) => (
               <LayerRow
                 key={index}
@@ -372,22 +615,22 @@ export function LeftPanel({
                 onToggleShapeNode={toggleShapeNode}
               />
             ))}
-          </div>
+          </LayerList>
         )}
-      </div>
+      </LayersContainer>
       {selectedLayerIndex !== null && animation && (
-        <div className="border-t border-gray-800 px-3 py-2 bg-gray-900/80">
-          <div className="flex items-center gap-2">
+        <SelectedLayerFooter>
+          <FooterContent>
             <LayerTypeIcon type={animation.layers[selectedLayerIndex]?.ty} />
-            <span className="text-[11px] text-gray-400 font-mono truncate flex-1">
+            <FooterLayerName>
               {animation.layers[selectedLayerIndex]?.nm || `Layer ${selectedLayerIndex}`}
-            </span>
-            <span className="text-[9px] text-gray-600 uppercase">
+            </FooterLayerName>
+            <FooterIndex>
               #{selectedLayerIndex}
-            </span>
-          </div>
-        </div>
+            </FooterIndex>
+          </FooterContent>
+        </SelectedLayerFooter>
       )}
-    </div>
+    </PanelContainer>
   );
 }

@@ -1,58 +1,229 @@
 import * as React from "react";
+import styled from "styled-components";
 import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import { theme } from "../../../styles/theme";
 
-import { cn } from "./utils";
+type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+type ButtonSize = "default" | "sm" | "lg" | "icon";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "border bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9 rounded-md",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-);
+interface StyledButtonProps {
+  $variant?: ButtonVariant;
+  $size?: ButtonSize;
+}
+
+const StyledButton = styled.button<StyledButtonProps>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${theme.spacing[2]};
+  white-space: nowrap;
+  border-radius: ${theme.borderRadius.md};
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.medium};
+  transition: all ${theme.transitions.DEFAULT};
+  border: 1px solid transparent;
+  outline: none;
+  flex-shrink: 0;
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  & svg {
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  & svg:not([class*='size-']) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:focus-visible {
+    border-color: ${theme.colors.blue500};
+    box-shadow: 0 0 0 3px ${theme.colors.blue500}33;
+  }
+
+  &[aria-invalid="true"] {
+    border-color: ${theme.colors.red500};
+    box-shadow: 0 0 0 3px ${theme.colors.red500}33;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &[aria-invalid="true"] {
+      box-shadow: 0 0 0 3px ${theme.colors.red500}66;
+    }
+  }
+
+  ${(props) => {
+    // Size styles
+    let sizeStyles = "";
+    switch (props.$size) {
+      case "sm":
+        sizeStyles = `
+          height: ${theme.spacing[8]};
+          padding: 0 ${theme.spacing[3]};
+          gap: ${theme.spacing[1.5]};
+
+          &:has(> svg) {
+            padding: 0 ${theme.spacing[2.5]};
+          }
+        `;
+        break;
+      case "lg":
+        sizeStyles = `
+          height: ${theme.spacing[10]};
+          padding: 0 ${theme.spacing[6]};
+
+          &:has(> svg) {
+            padding: 0 ${theme.spacing[4]};
+          }
+        `;
+        break;
+      case "icon":
+        sizeStyles = `
+          width: ${theme.spacing[9]};
+          height: ${theme.spacing[9]};
+        `;
+        break;
+      default: // "default"
+        sizeStyles = `
+          height: ${theme.spacing[9]};
+          padding: ${theme.spacing[2]} ${theme.spacing[4]};
+
+          &:has(> svg) {
+            padding: 0 ${theme.spacing[3]};
+          }
+        `;
+    }
+
+    // Variant styles
+    let variantStyles = "";
+    switch (props.$variant) {
+      case "destructive":
+        variantStyles = `
+          background-color: ${theme.colors.red500};
+          color: ${theme.colors.white};
+
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.red600};
+          }
+
+          &:focus-visible {
+            box-shadow: 0 0 0 3px ${theme.colors.red500}33;
+          }
+
+          @media (prefers-color-scheme: dark) {
+            background-color: ${theme.colors.red500}99;
+
+            &:focus-visible {
+              box-shadow: 0 0 0 3px ${theme.colors.red500}66;
+            }
+          }
+        `;
+        break;
+      case "outline":
+        variantStyles = `
+          background-color: ${theme.colors.gray900};
+          color: ${theme.colors.gray100};
+          border-color: ${theme.colors.gray700};
+
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.gray800};
+            color: ${theme.colors.gray100};
+          }
+
+          @media (prefers-color-scheme: dark) {
+            background-color: ${theme.colors.gray700}4D;
+            border-color: ${theme.colors.gray700};
+
+            &:hover:not(:disabled) {
+              background-color: ${theme.colors.gray700}80;
+            }
+          }
+        `;
+        break;
+      case "secondary":
+        variantStyles = `
+          background-color: ${theme.colors.gray700};
+          color: ${theme.colors.gray100};
+
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.gray600};
+          }
+        `;
+        break;
+      case "ghost":
+        variantStyles = `
+          background-color: transparent;
+          color: ${theme.colors.gray100};
+
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.gray800};
+            color: ${theme.colors.gray100};
+          }
+
+          @media (prefers-color-scheme: dark) {
+            &:hover:not(:disabled) {
+              background-color: ${theme.colors.gray800}80;
+            }
+          }
+        `;
+        break;
+      case "link":
+        variantStyles = `
+          background-color: transparent;
+          color: ${theme.colors.blue500};
+          text-decoration: underline;
+          text-underline-offset: 4px;
+
+          &:hover:not(:disabled) {
+            text-decoration: underline;
+          }
+        `;
+        break;
+      default: // "default"
+        variantStyles = `
+          background-color: ${theme.colors.blue500};
+          color: ${theme.colors.white};
+
+          &:hover:not(:disabled) {
+            background-color: ${theme.colors.blue600};
+          }
+        `;
+    }
+
+    return sizeStyles + variantStyles;
+  }}
+`;
+
+interface ButtonProps extends React.ComponentProps<"button"> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  asChild?: boolean;
+}
 
 function Button({
-  className,
-  variant,
-  size,
+  variant = "default",
+  size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
-  const Comp = asChild ? Slot : "button";
+}: ButtonProps) {
+  const Comp = asChild ? Slot : StyledButton;
+
+  if (asChild) {
+    return <Comp data-slot="button" {...props} />;
+  }
 
   return (
-    <Comp
+    <StyledButton
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      $variant={variant}
+      $size={size}
       {...props}
     />
   );
 }
 
-export { Button, buttonVariants };
+export { Button };

@@ -1,17 +1,76 @@
 import * as React from "react";
-import { cn } from "./utils";
+import styled from "styled-components";
+import { theme } from "../../../styles/theme";
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+const StyledInput = styled.input`
+  display: flex;
+  height: ${theme.spacing[9]};
+  width: 100%;
+  min-width: 0;
+  border-radius: ${theme.borderRadius.md};
+  border: 1px solid ${theme.colors.gray700};
+  padding: ${theme.spacing[1]} ${theme.spacing[3]};
+  font-size: ${theme.typography.fontSize.base};
+  background-color: ${theme.colors.gray900};
+  color: ${theme.colors.gray100};
+  transition: color ${theme.transitions.DEFAULT}, box-shadow ${theme.transitions.DEFAULT};
+  outline: none;
+
+  @media (min-width: 768px) {
+    font-size: ${theme.typography.fontSize.sm};
+  }
+
+  &::placeholder {
+    color: ${theme.colors.gray500};
+  }
+
+  &::selection {
+    background-color: ${theme.colors.blue500};
+    color: ${theme.colors.white};
+  }
+
+  &::file-selector-button {
+    display: inline-flex;
+    height: ${theme.spacing[7]};
+    border: 0;
+    background-color: transparent;
+    font-size: ${theme.typography.fontSize.sm};
+    font-weight: ${theme.typography.fontWeight.medium};
+    color: ${theme.colors.gray100};
+  }
+
+  &:focus-visible {
+    border-color: ${theme.colors.blue500};
+    box-shadow: 0 0 0 3px ${theme.colors.blue500}33;
+  }
+
+  &[aria-invalid="true"] {
+    border-color: ${theme.colors.red500};
+    box-shadow: 0 0 0 3px ${theme.colors.red500}33;
+  }
+
+  &:disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background-color: ${theme.colors.gray700}4D;
+
+    &[aria-invalid="true"] {
+      box-shadow: 0 0 0 3px ${theme.colors.red500}66;
+    }
+  }
+`;
+
+interface InputProps extends React.ComponentProps<"input"> {}
+
+function Input({ type, ...props }: InputProps) {
   return (
-    <input
+    <StyledInput
       type={type}
       data-slot="input"
-      className={cn(
-        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base bg-input-background transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-        className,
-      )}
       {...props}
     />
   );
