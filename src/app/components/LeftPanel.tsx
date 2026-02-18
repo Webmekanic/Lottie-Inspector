@@ -1,16 +1,22 @@
-import { ChevronRight, ChevronDown, Eye, EyeOff, Lock, Unlock, Box, Image, Type, Layers, CircleDot, FileCode } from 'lucide-react';
+import { ChevronRight, ChevronDown, Eye, EyeOff, Lock, Unlock, Box, Image, Type, Layers, CircleDot, FileCode, Sparkles } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { LottieLayer, LottieAnimation, LottieShape } from '../../types/lottie';
+import { LottieEvent } from '../../machines/lottieStateMachine';
 import { useUIStore } from '../../stores/uiStore';
+import { AIChat } from './AIChat';
 import * as S from '../../styles/LeftPanelStyles';
 
 interface LeftPanelProps {
   animation: LottieAnimation | null;
   selectedLayerIndex: number | null;
+  selectedLayer: LottieLayer | null;
   onLayerSelect: (index: number | null) => void;
   onToggleVisibility: (index: number) => void;
   onToggleLock: (index: number) => void;
+  onSend: (event: LottieEvent) => void;
 }
+
+type Tab = 'layers' | 'ai';
 
 interface ShapeTreeNode {
   id: string;
@@ -182,7 +188,7 @@ function LayerRow({
         )}
         <LayerTypeIcon type={layer.ty} />
         <S.LayerName $isSelected={isSelected}>
-          {layer.nm || `Layer ${index}`}
+          {`Layer ${layer.nm || `Layer ${index}`}`}
         </S.LayerName>
         <S.LayerTypeLabel $color={LAYER_TYPE_COLOR_MAP[layer.ty] || '#71717a'}>
           {LAYER_TYPE_LABELS[layer.ty] ?? '?'}
@@ -234,10 +240,13 @@ function LayerRow({
 export function LeftPanel({
   animation,
   selectedLayerIndex,
+  selectedLayer,
   onLayerSelect,
   onToggleVisibility,
   onToggleLock,
+  onSend,
 }: LeftPanelProps) {
+  const [activeTab, setActiveTab] = useState<Tab>('layers');
   const [expandedLayers, setExpandedLayers] = useState<Set<number>>(new Set());
   const [expandedShapeNodes, setExpandedShapeNodes] = useState<Set<string>>(new Set());
 
@@ -265,7 +274,10 @@ export function LeftPanel({
     if (!q) return animation.layers.map((layer, index) => ({ layer, index }));
     return animation.layers
       .map((layer, index) => ({ layer, index }))
-      .filter(({ layer }) => layer.nm?.toLowerCase().includes(q));
+      .filter(({ layer, index }) => {
+        const layerName = `Layer ${layer.nm || index + 1}`;
+        return layerName.toLowerCase().includes(q);
+      });
   }, [animation?.layers, searchQuery]);
 
   const stats = useMemo(() => {
@@ -279,7 +291,23 @@ export function LeftPanel({
 
   return (
     <S.PanelContainer>
-      <S.Header>
+      {/* Tabs */}
+      <S.TabsContainer>
+        <S.TabButton $active={activeTab === 'layers'} onClick={() => setActiveTab('layers')}>
+          <Layers />
+          Layers
+        </S.TabButton>
+        <S.TabButton $active={activeTab === 'ai'} onClick={() => setActiveTab('ai')}>
+          <Sparkles />
+          AI Chat
+          <S.TabBadge>NEW</S.TabBadge>
+        </S.TabButton>
+      </S.TabsContainer>
+
+      {/* Tab Content */}
+      {activeTab === 'layers' ? (
+        <>
+          <S.Header>
         <S.HeaderRow>
           <S.SectionTitle>Layers</S.SectionTitle>
           {stats && (
@@ -351,6 +379,16 @@ export function LeftPanel({
             </S.FooterIndex>
           </S.FooterContent>
         </S.SelectedLayerFooter>
+      )}
+        </>
+      ) : (
+        /* AI Chat Tab */
+        <AIChat
+          animation={animation}
+          selectedLayer={selectedLayer}
+          selectedLayerIndex={selectedLayerIndex}
+          onSend={onSend}
+        />
       )}
     </S.PanelContainer>
   );
