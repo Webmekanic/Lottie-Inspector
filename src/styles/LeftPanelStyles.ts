@@ -279,3 +279,57 @@ export const StyledIconWrapper = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
+// Tab styles
+export const TabsContainer = styled.div`
+  display: flex;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.gray800};
+  flex-shrink: 0;
+`;
+
+export const TabButton = styled.button<{ $active?: boolean }>`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  padding: ${({ theme }) => `${theme.spacing[2.5]} 0`};
+  font-size: 11px;
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all ${({ theme }) => theme.transitions.DEFAULT};
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${({ theme, $active }) => 
+    $active ? theme.colors.blue400 : theme.colors.gray500};
+  border-bottom: 2px solid ${({ theme, $active }) => 
+    $active ? theme.colors.blue500 : 'transparent'};
+  background-color: ${({ theme, $active }) => 
+    $active ? `${theme.colors.gray800}40` : 'transparent'};
+
+  &:hover {
+    color: ${({ theme, $active }) => 
+      $active ? theme.colors.blue400 : theme.colors.gray400};
+    background-color: ${({ theme }) => `${theme.colors.gray800}20`};
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+export const TabBadge = styled.span`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: ${({ theme }) => `${theme.spacing[0.5]} ${theme.spacing[1]}`};
+  background-color: ${({ theme }) => theme.colors.blue500};
+  color: ${({ theme }) => theme.colors.white};
+  font-size: 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+`;

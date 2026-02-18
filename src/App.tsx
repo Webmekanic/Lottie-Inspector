@@ -75,9 +75,11 @@ function App() {
         <LeftPanel
           animation={currentAnimation}
           selectedLayerIndex={selectedLayerIndex}
+          selectedLayer={selectedLayer}
           onLayerSelect={handlers.handleLayerSelect}
           onToggleVisibility={handlers.handleToggleVisibility}
           onToggleLock={handlers.handleToggleLock}
+          onSend={send}
         />
         <CenterPanel
           animation={currentAnimation}
