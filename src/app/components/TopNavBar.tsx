@@ -97,9 +97,9 @@ export function TopNavBar({
           <S.ModeLabel $active={renderMode === 'canvas'}>Canvas</S.ModeLabel>
         </S.RenderModeToggle>
         <S.FpsBadge>{fps.toFixed(1)} FPS</S.FpsBadge>
-        <S.ThemeToggleButton onClick={toggleTheme} data-tour="theme-toggle">
+        {/* <S.ThemeToggleButton onClick={toggleTheme}>
           {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-        </S.ThemeToggleButton>
+        </S.ThemeToggleButton> */}
       </S.RightSection>
     </S.NavContainer>
   );

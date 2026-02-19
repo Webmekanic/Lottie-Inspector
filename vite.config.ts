@@ -12,14 +12,9 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq, req) => {
-            // Log for debugging
-            console.log('Proxying request to Anthropic API...');
-            
             // Forward the API key from the incoming request
             const apiKey = req.headers['x-api-key'];
             if (apiKey) {
-              console.log('API key found, forwarding to Anthropic');
-              console.log('First 15 chars:', typeof apiKey === 'string' ? apiKey.substring(0, 15) : apiKey);
               proxyReq.setHeader('x-api-key', apiKey);
             } else {
               console.warn('No API key found in request headers!');
@@ -32,8 +27,6 @@ export default defineConfig({
           });
           
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            console.log('Response status:', proxyRes.statusCode);
-            
             // Log response body for 401 errors
             if (proxyRes.statusCode === 401) {
               let body = '';

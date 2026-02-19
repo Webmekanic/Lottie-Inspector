@@ -52,7 +52,7 @@ export const useUIStore = create<UIState>((set) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
   
   // Zoom
-  zoomLevel: 100,
+  zoomLevel: 40,
   setZoomLevel: (level) => set({ zoomLevel: Math.max(10, Math.min(500, level)) }),
   zoomIn: () => set((state) => ({ 
     zoomLevel: Math.min(500, state.zoomLevel + 10) 

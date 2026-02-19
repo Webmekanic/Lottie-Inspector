@@ -361,6 +361,20 @@ export const StyledInput = styled.input`
       box-shadow: 0 0 0 3px ${theme.colors.red500}66;
     }
   }
+
+  /* Number input spinner controls */
+  &[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield;
+  }
+
+  /* WebKit browsers (Chrome, Safari, Edge) */
+  &[type="number"]::-webkit-inner-spin-button,
+  &[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
 `;
 
 // Label Styles

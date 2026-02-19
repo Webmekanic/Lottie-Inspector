@@ -60,12 +60,15 @@ export function CenterPanel({
     }
 
     try {
+      // Create a deep clone to prevent lottie-web from mutating the original animation data
+      const animationClone = JSON.parse(JSON.stringify(animation));
+      
       animationRef.current = lottie.loadAnimation({
         container: containerRef.current,
         renderer: renderMode,
         loop: false,
         autoplay: false,
-        animationData: animation,
+        animationData: animationClone,
       });
 
       animationRef.current.goToAndStop(currentFrame, true);

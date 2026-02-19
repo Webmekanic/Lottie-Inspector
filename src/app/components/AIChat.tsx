@@ -43,25 +43,44 @@ async function callClaudeAPI(
 ): Promise<AIResponse> {
   const systemPrompt = `You are an expert Lottie animation editor. You help users edit animations by understanding natural language requests and generating precise property updates.
 
+CRITICAL: Always return the COMPLETE property object with both 'a' (animation flag) and 'k' (value) fields.
+
+Property structure:
+- Static properties: { "a": 0, "k": <value> }
+- Animated properties: { "a": 1, "k": [<keyframe objects>] }
+
 IMPORTANT RULES:
 1. Respond ONLY with valid JSON, no markdown code blocks
-2. Use dot-notation paths: "ks.r" for rotation, "ks.p" for position, "ks.s" for scale, "ks.o" for opacity
-3. Preserve animation structure: if property has keyframes (a:1), update keyframes. If static (a:0), update k value
-4. Common properties:
-   - Position: ks.p (array [x, y])
-   - Scale: ks.s (array [scaleX, scaleY] in %)
-   - Rotation: ks.r (degrees)
-   - Opacity: ks.o (0-100)
-   - Anchor: ks.a (array [x, y])
+2. ALWAYS include BOTH "a" and "k" fields in the value object
+3. Use dot-notation paths: "ks.r" for rotation, "ks.p" for position, "ks.s" for scale, "ks.o" for opacity
+4. For arrays (position, scale, anchor), ensure all 3 values [x, y, z] are present
 
-Response format:
+Common property formats:
+- Position: { "a": 0, "k": [x, y, 0] }
+- Scale: { "a": 0, "k": [scaleX%, scaleY%, 100] }
+- Rotation: { "a": 0, "k": degrees }
+- Opacity: { "a": 0, "k": 0-100 }
+- Anchor: { "a": 0, "k": [x, y, 0] }
+
+EXAMPLE RESPONSES:
+For "double the scale" (current scale [100, 100, 100]):
 {
   "action": "UPDATE_LAYER_PROPERTY",
-  "layerIndex": <number>,
-  "property": "<dot.path>",
-  "value": <new value object>,
-  "explanation": "<what you changed>",
-  "reasoning": "<why this accomplishes the user's goal>"
+  "layerIndex": 0,
+  "property": "ks.s",
+  "value": { "a": 0, "k": [200, 200, 100] },
+  "explanation": "Doubled the scale from 100% to 200%",
+  "reasoning": "Multiplied X and Y scale by 2, kept Z unchanged"
+}
+
+For "rotate 45 degrees":
+{
+  "action": "UPDATE_LAYER_PROPERTY",
+  "layerIndex": 0,
+  "property": "ks.r",
+  "value": { "a": 0, "k": 45 },
+  "explanation": "Set rotation to 45 degrees",
+  "reasoning": "Applied clockwise rotation as requested"
 }
 
 If you cannot parse the request safely, respond:
@@ -77,23 +96,26 @@ Total layers: ${animation?.layers?.length || 0}
 ${selectedLayer ? `
 Selected layer: "${selectedLayer.nm || 'Unnamed'}" (index ${selectedLayerIndex})
 Layer type: ${selectedLayer.ty === 4 ? 'Shape' : selectedLayer.ty === 2 ? 'Image' : 'Other'}
-Current transform:
-- Position: ${JSON.stringify(selectedLayer.ks?.p?.k)}
-- Rotation: ${JSON.stringify(selectedLayer.ks?.r?.k)}
-- Scale: ${JSON.stringify(selectedLayer.ks?.s?.k)}
-- Opacity: ${JSON.stringify(selectedLayer.ks?.o?.k)}
+Current transform (FULL PROPERTY OBJECTS):
+- Position: ${JSON.stringify(selectedLayer.ks?.p)}
+- Rotation: ${JSON.stringify(selectedLayer.ks?.r)}
+- Scale: ${JSON.stringify(selectedLayer.ks?.s)}
+- Opacity: ${JSON.stringify(selectedLayer.ks?.o)}
+- Anchor: ${JSON.stringify(selectedLayer.ks?.a)}
+
+REMEMBER: Return the COMPLETE property object with both "a" and "k" fields.
+For animated properties (a:1), preserve the keyframe structure.
+For static properties (a:0), return { "a": 0, "k": <new value> }.
 ` : 'No layer selected - please select a layer first'}
 
 User request: "${userMessage}"
 
-Generate the appropriate property update:`;
+Generate the appropriate property update with COMPLETE property object:`;
 
   // Use different endpoint for dev vs production
   const endpoint = import.meta.env.MODE === 'development'
-    ? '/api/anthropic/v1/messages'  // Dev proxy
-    : '/api/anthropic';              // Vercel serverless function
-
-  console.log('Calling API with key:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NO KEY');
+    ? '/api/anthropic/v1/messages' 
+    : '/api/anthropic';
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -189,8 +211,8 @@ function SuggestedPrompts({ onSelect }: { onSelect: (prompt: string) => void }) 
     "Make this rotate 360 degrees",
     "Double the scale",
     "Move 50 pixels to the right",
+     "Make it bounce",
     "Fade in over 2 seconds",
-    "Make it bounce",
     "Reduce opacity to 50%",
   ];
 
@@ -498,7 +520,7 @@ export function AIChat({
               !apiKey.trim()
                 ? "Set API key first..."
                 : selectedLayer 
-                ? `Edit "${selectedLayer.nm || 'layer'}"`
+                ? `Edit Layer "${selectedLayer.nm || 'layer'}"`
                 : "Select a layer first..."
             }
             disabled={isLoading || !selectedLayer || !apiKey.trim()}
