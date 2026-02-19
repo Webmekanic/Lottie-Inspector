@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMachine } from '@xstate/react';
 import { useUIStore } from './stores/uiStore';
 import { saveToLocalStorage } from './utils/localStorage';
@@ -11,11 +11,18 @@ import { BottomTimeline } from './app/components/BottomTimeLine';
 import { Tour } from './components/Tour/Tour';
 import { useLottieHandlers } from './hooks/useLottieHandlers';
 import { lottieStateMachine } from './machines/lottieStateMachine';
-import { AppContainer, MainContent } from './styles/UiStyles';
+import { AppContainer, MainContent, MobileOverlay, MobileOverlayTitle, MobileOverlayText } from './styles/UiStyles';
 
 function App() {
   const [state, send] = useMachine(lottieStateMachine);
   const { theme, currentFPS } = useUIStore();
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
     const {
     currentAnimation,
@@ -62,6 +69,14 @@ function App() {
 
   return (
     <AppContainer data-tour="app-container">
+      {windowWidth < 1024 && (
+        <MobileOverlay>
+          <MobileOverlayTitle>Works Best on Desktop</MobileOverlayTitle>
+          <MobileOverlayText>
+            Switch to a desktop with a viewing width of at least 1024px to enjoy a better experience
+          </MobileOverlayText>
+        </MobileOverlay>
+      )}
       <Tour />
       <TopNavBar
         fileName={fileName}
@@ -112,7 +127,7 @@ function App() {
         onFrameChange={handlers.handleFrameChange}
         selectedLayerIndex={selectedLayerIndex} 
         isPlaying={isPlaying}   
-        onLayerSelect={idx => send({ type: 'SELECT_LAYER', layerIndex: idx })}
+        onLayerSelect={handlers.handleLayerSelect}
       />
     </AppContainer>
   )

@@ -798,3 +798,34 @@ export const MainContent = styled.div`
   display: flex;
   overflow: hidden;
 `;
+
+export const MobileOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: ${theme.spacing[8]};
+  text-align: center;
+`;
+
+export const MobileOverlayTitle = styled.h2`
+  font-size: ${theme.typography.fontSize['2xl']};
+  font-weight: ${theme.typography.fontWeight.semibold};
+  color: ${theme.colors.gray100};
+  margin-bottom: ${theme.spacing[4]};
+`;
+
+export const MobileOverlayText = styled.p`
+  font-size: ${theme.typography.fontSize.base};
+  color: ${theme.colors.gray400};
+  max-width: 400px;
+  line-height: 1.6;
+`;
