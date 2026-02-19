@@ -253,10 +253,18 @@ export function AIChat({
   const [isLoading, setIsLoading] = useState(false);
   const [pendingChange, setPendingChange] = useState<AIResponse | null>(null);
   const [apiKey, setApiKey] = useState(() => {
-    return localStorage.getItem('anthropic_api_key') || '';
+    try {
+      return localStorage.getItem('anthropic_api_key') || '';
+    } catch {
+      return '';
+    }
   });
   const [showApiKeyInput, setShowApiKeyInput] = useState(() => {
-    return !localStorage.getItem('anthropic_api_key');
+    try {
+      return !localStorage.getItem('anthropic_api_key');
+    } catch {
+      return true;
+    }
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -403,7 +411,11 @@ export function AIChat({
         return;
       }
       
-      localStorage.setItem('anthropic_api_key', apiKey.trim());
+      try {
+        localStorage.setItem('anthropic_api_key', apiKey.trim());
+      } catch (error) {
+        console.warn('Failed to save API key to localStorage:', error);
+      }
       setShowApiKeyInput(false);
       
       const confirmMessage: Message = {
@@ -418,7 +430,11 @@ export function AIChat({
 
   const handleClearApiKey = () => {
     setApiKey('');
-    localStorage.removeItem('anthropic_api_key');
+    try {
+      localStorage.removeItem('anthropic_api_key');
+    } catch (error) {
+      console.warn('Failed to remove API key from localStorage:', error);
+    }
     setShowApiKeyInput(true);
   };
 

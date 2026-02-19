@@ -20,19 +20,19 @@ const slideUp = keyframes`
   }
 `;
 
-export const TourOverlay = styled.div`
+export const TourOverlay = styled.div<{ $isCenterPlacement?: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
+  background: ${props => props.$isCenterPlacement ? 'rgba(0, 0, 0, 0.5)' : 'transparent'};
   z-index: 9998;
-  animation: ${fadeIn} 0.3s ease;
-  backdrop-filter: blur(3px);
+  cursor: pointer;
+  transition: background 0.3s ease;
 `;
 
-export const TourHighlight = styled.div<{ $top: number; $left: number; $width: number; $height: number }>`
+export const TourHighlight = styled.div<{ $top: number; $left: number; $width: number; $height: number; $isVisible: boolean }>`
   position: fixed;
   top: ${props => props.$top}px;
   left: ${props => props.$left}px;
@@ -43,11 +43,11 @@ export const TourHighlight = styled.div<{ $top: number; $left: number; $width: n
   border-radius: 8px;
   z-index: 10000;
   pointer-events: none;
+  opacity: ${props => props.$isVisible ? 1 : 0};
   box-shadow: 
     0 0 0 4px rgba(59, 130, 246, 0.4),
-    0 0 0 9999px rgba(0, 0, 0, 0.85);
-  animation: ${fadeIn} 0.3s ease;
-  transition: all 0.3s ease;
+    0 0 0 9999px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease, opacity 0.3s ease;
 `;
 
 export const TourTooltip = styled.div<{ 
@@ -65,6 +65,7 @@ export const TourTooltip = styled.div<{
   max-width: 400px;
   min-width: 320px;
   z-index: 10001;
+  cursor: default;
   box-shadow: 
     0 20px 25px -5px rgba(0, 0, 0, 0.5),
     0 10px 10px -5px rgba(0, 0, 0, 0.3);

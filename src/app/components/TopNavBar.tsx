@@ -86,7 +86,7 @@ export function TopNavBar({
       </S.MiddleSection>
 
       <S.RightSection>
-        <TourTriggerButton />
+        {/* <TourTriggerButton /> */}
         <S.RenderModeToggle data-tour="render-mode">
           <S.ModeLabel $active={renderMode === 'svg'}>SVG</S.ModeLabel>
           <Switch

@@ -1,59 +1,111 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { tourSteps } from '../utils/tourSteps';
+import { create } from 'zustand';
 
 const TOUR_STORAGE_KEY = 'lottie-inspector-tour-completed';
 
+interface TourState {
+  isActive: boolean;
+  currentStep: number;
+  isCompleted: boolean;
+  startTour: () => void;
+  nextStep: () => void;
+  previousStep: () => void;
+  skipTour: () => void;
+  completeTour: () => void;
+  resetTour: () => void;
+}
+
+const useTourStore = create<TourState>((set, get) => ({
+  isActive: false,
+  currentStep: 0,
+  isCompleted: false,
+
+  startTour: () => {
+    set({ isActive: true, currentStep: 0 });
+  },
+
+  nextStep: () => {
+    const { currentStep } = get();
+    if (currentStep < tourSteps.length - 1) {
+      set({ currentStep: currentStep + 1 });
+    } else {
+      get().completeTour();
+    }
+  },
+
+  previousStep: () => {
+    const { currentStep } = get();
+    if (currentStep > 0) {
+      set({ currentStep: currentStep - 1 });
+    }
+  },
+
+  skipTour: () => {
+    get().completeTour();
+  },
+
+  completeTour: () => {
+    set({ isActive: false, isCompleted: true });
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+      } catch (error) {
+        console.error('Failed to persist tour completion state to localStorage:', error);
+      }
+    }
+  },
+
+  resetTour: () => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        localStorage.removeItem(TOUR_STORAGE_KEY);
+      } catch (error) {
+        console.warn('Failed to remove tour completion state from localStorage:', error);
+      }
+    }
+    set({ isCompleted: false, currentStep: 0 });
+  },
+}));
+
+let hasInitializedFromStorage = false;
+
 export function useTour() {
-  const [isActive, setIsActive] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const {
+    isActive,
+    currentStep,
+    isCompleted,
+    startTour,
+    nextStep,
+    previousStep,
+    skipTour,
+    resetTour,
+  } = useTourStore();
 
   useEffect(() => {
-    const completed = localStorage.getItem(TOUR_STORAGE_KEY) === 'true';
-    setIsCompleted(completed);
-    
+    if (hasInitializedFromStorage) {
+      return;
+    }
+    hasInitializedFromStorage = true;
+
+    let completed = false;
+    try {
+      completed = localStorage.getItem(TOUR_STORAGE_KEY) === 'true';
+    } catch {
+      completed = false;
+    }
+
+    if (completed) {
+      useTourStore.setState({ isCompleted: true });
+      return;
+    }
+
     // Auto-start tour for first-time users after a short delay
-    if (!completed) {
-      const timer = setTimeout(() => {
-        setIsActive(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+    const timer = setTimeout(() => {
+      useTourStore.setState({ isActive: true });
+    }, 1000);
 
-  const startTour = useCallback(() => {
-    setCurrentStep(0);
-    setIsActive(true);
-  }, []);
-
-  const nextStep = useCallback(() => {
-    if (currentStep < tourSteps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      completeTour();
-    }
-  }, [currentStep]);
-
-  const previousStep = useCallback(() => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  }, [currentStep]);
-
-  const skipTour = useCallback(() => {
-    completeTour();
-  }, []);
-
-  const completeTour = useCallback(() => {
-    setIsActive(false);
-    setIsCompleted(true);
-    localStorage.setItem(TOUR_STORAGE_KEY, 'true');
-  }, []);
-
-  const resetTour = useCallback(() => {
-    localStorage.removeItem(TOUR_STORAGE_KEY);
-    setIsCompleted(false);
-    setCurrentStep(0);
+    return () => clearTimeout(timer);
   }, []);
 
   return {

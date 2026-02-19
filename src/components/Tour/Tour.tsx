@@ -29,9 +29,29 @@ export function Tour() {
   const updatePositions = useCallback(() => {
     if (!currentStepData || !isActive) return;
 
+    // For center placement, we don't need the target element
+    if (currentStepData.placement === 'center') {
+      const tooltipWidth = Math.min(400, window.innerWidth * 0.9);
+      const tooltipHeight = Math.min(300, window.innerHeight * 0.5);
+      setTooltipPosition({
+        top: window.innerHeight / 2 - tooltipHeight / 2,
+        left: window.innerWidth / 2 - tooltipWidth / 2,
+      });
+      return;
+    }
+
     const element = document.querySelector(currentStepData.target);
     if (!element) {
-      console.warn(`Tour target not found: ${currentStepData.target}`);
+      console.warn(`Tour target not found: ${currentStepData.target}, will auto-skip if not found shortly`);
+      // Auto-advance to next step after a brief delay if element still isn't found
+      const capturedStep = currentStep;
+      setTimeout(() => {
+        const retryElement = document.querySelector(currentStepData.target);
+        if (!retryElement && isActive && currentStep === capturedStep) {
+          console.warn(`Tour target still not found: ${currentStepData.target}, skipping to next step`);
+          nextStep();
+        }
+      }, 1000);
       return;
     }
 
@@ -47,8 +67,8 @@ export function Tour() {
     });
 
     // Calculate tooltip position based on placement
-    const tooltipWidth = 400;
-    const tooltipHeight = 200; // Approximate
+    const tooltipWidth = Math.min(400, window.innerWidth * 0.9);
+    const tooltipHeight = Math.min(300, window.innerHeight * 0.5); // Responsive approximation
     const spacing = 20;
 
     let top = 0;
@@ -71,10 +91,6 @@ export function Tour() {
         top = rect.top + rect.height / 2 - tooltipHeight / 2;
         left = rect.right + spacing;
         break;
-      case 'center':
-        top = window.innerHeight / 2 - tooltipHeight / 2;
-        left = window.innerWidth / 2 - tooltipWidth / 2;
-        break;
       default:
         top = rect.bottom + spacing;
         left = rect.left + rect.width / 2 - tooltipWidth / 2;
@@ -88,23 +104,38 @@ export function Tour() {
     left = Math.max(20, Math.min(left, maxLeft));
 
     setTooltipPosition({ top, left });
-  }, [currentStepData, isActive]);
+  }, [currentStepData, isActive, nextStep]);
 
   useEffect(() => {
     if (isActive) {
+      let frameId: number | null = null;
+      const handleScrollOrResize = () => {
+        if (frameId !== null) {
+          return;
+        }
+        frameId = window.requestAnimationFrame(() => {
+          frameId = null;
+          updatePositions();
+        });
+      };
+
       // Initial position
       updatePositions();
 
-      // Update on window resize or scroll
-      window.addEventListener('resize', updatePositions);
-      window.addEventListener('scroll', updatePositions, true);
+      // Update on window resize or scroll (throttled per animation frame)
+      window.addEventListener('resize', handleScrollOrResize);
+      window.addEventListener('scroll', handleScrollOrResize, true);
 
       // Delay to ensure DOM is ready
       const timer = setTimeout(updatePositions, 100);
 
       return () => {
-        window.removeEventListener('resize', updatePositions);
-        window.removeEventListener('scroll', updatePositions, true);
+        if (frameId !== null) {
+          cancelAnimationFrame(frameId);
+          frameId = null;
+        }
+        window.removeEventListener('resize', handleScrollOrResize);
+        window.removeEventListener('scroll', handleScrollOrResize, true);
         clearTimeout(timer);
       };
     }
@@ -118,23 +149,35 @@ export function Tour() {
   const isLastStep = currentStep === totalSteps - 1;
   const isCenterPlacement = currentStepData.placement === 'center';
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    // Only skip tour if clicked directly on overlay, not on tooltip
+    if (e.target === e.currentTarget) {
+      skipTour();
+    }
+  };
+
+  const handleTooltipClick = (e: React.MouseEvent) => {
+    // Prevent clicks inside tooltip from closing the tour
+    e.stopPropagation();
+  };
+
   return (
     <>
-      {isCenterPlacement ? (
-        <S.TourOverlay onClick={skipTour} />
-      ) : (
-        <S.TourHighlight
-          $top={targetPosition.top}
-          $left={targetPosition.left}
-          $width={targetPosition.width}
-          $height={targetPosition.height}
-        />
-      )}
+      <S.TourOverlay onClick={handleOverlayClick} $isCenterPlacement={isCenterPlacement} />
+      
+      <S.TourHighlight
+        $top={targetPosition.top}
+        $left={targetPosition.left}
+        $width={targetPosition.width}
+        $height={targetPosition.height}
+        $isVisible={!isCenterPlacement}
+      />
 
       <S.TourTooltip
         $top={tooltipPosition.top}
         $left={tooltipPosition.left}
         $placement={currentStepData.placement || 'bottom'}
+        onClick={handleTooltipClick}
       >
         <S.TooltipHeader>
           <S.TooltipTitle>{currentStepData.title}</S.TooltipTitle>
