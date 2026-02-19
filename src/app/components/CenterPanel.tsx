@@ -147,7 +147,7 @@ export function CenterPanel({
   const scaledHeight = (animationHeight * zoomLevel) / 100;
 
   return (
-    <S.PanelContainer>
+    <S.PanelContainer data-tour="center-panel">
       <S.ViewportArea>
         {!animation ? (
           <S.EmptyState>
