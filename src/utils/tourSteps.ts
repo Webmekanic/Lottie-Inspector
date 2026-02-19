@@ -23,13 +23,6 @@ export const tourSteps: TourStep[] = [
     placement: 'right',
   },
   {
-    id: 'layer-selection',
-    target: '[data-tour="layer-item"]',
-    title: '🎯 Select a Layer',
-    content: 'Click any layer to select it. The eye icon toggles visibility, and the lock icon prevents editing. Layer colors indicate their type.',
-    placement: 'right',
-  },
-  {
     id: 'center-panel',
     target: '[data-tour="center-panel"]',
     title: '🎬 Animation Preview',
@@ -44,13 +37,6 @@ export const tourSteps: TourStep[] = [
     placement: 'left',
   },
   {
-    id: 'timeline',
-    target: '[data-tour="bottom-timeline"]',
-    title: '⏱️ Timeline & Keyframes',
-    content: 'Control playback, scrub through frames, and see keyframe markers. Perfect for frame-by-frame analysis!',
-    placement: 'top',
-  },
-  {
     id: 'ai-chat-tab',
     target: '[data-tour="ai-chat-tab"]',
     title: '🤖 AI Chat Assistant',
@@ -58,31 +44,10 @@ export const tourSteps: TourStep[] = [
     placement: 'right',
   },
   {
-    id: 'ai-commands',
-    target: '[data-tour="ai-chat-tab"]',
-    title: '✨ Natural Language Editing',
-    content: 'Try commands like "Make it bounce", "Rotate 360 degrees", or "Move 50 pixels right". The AI understands animation concepts!',
-    placement: 'right',
-  },
-  {
     id: 'render-mode',
     target: '[data-tour="render-mode"]',
     title: '🎨 Render Mode',
     content: 'Toggle between SVG (crisp vectors) and Canvas (better performance for complex animations) rendering modes.',
-    placement: 'bottom',
-  },
-  {
-    id: 'theme',
-    target: '[data-tour="theme-toggle"]',
-    title: '🌓 Theme Toggle',
-    content: 'Switch between light and dark themes. Dark mode is easier on your eyes during long editing sessions!',
-    placement: 'bottom',
-  },
-  {
-    id: 'export',
-    target: '[data-tour="export-button"]',
-    title: '💾 Export Your Work',
-    content: 'When you\'re done editing, click here to download your modified Lottie animation as a JSON file.',
     placement: 'bottom',
   },
   {

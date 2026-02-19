@@ -437,7 +437,7 @@ export function RightPanel({
 
   if (!selectedLayer || selectedLayerIndex === null) {
     return (
-      <S.EmptyStateContainer>
+      <S.EmptyStateContainer data-tour="right-panel">
         <S.EmptyStateIcon />
         <S.EmptyStateText>
           Select a layer in the panel to inspect and edit its properties
@@ -453,7 +453,7 @@ export function RightPanel({
 
   if (isLocked) {
     return (
-      <S.LockedStateContainer>
+      <S.LockedStateContainer data-tour="right-panel">
         <S.Header>
           <S.HeaderContent>
             <S.HeaderInfo>
