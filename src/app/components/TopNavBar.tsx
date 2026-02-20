@@ -41,9 +41,9 @@ export function TopNavBar({
     <S.NavContainer>
       <S.LeftSection>
         <S.LogoSection>
-          <S.Logo>
+          {/* <S.Logo>
             <S.LogoText>L</S.LogoText>
-          </S.Logo>
+          </S.Logo> */}
           <S.Title>Lottie Inspector</S.Title>
         </S.LogoSection>
         <S.FileName>{fileName || 'No file loaded'}</S.FileName>
@@ -86,7 +86,7 @@ export function TopNavBar({
       </S.MiddleSection>
 
       <S.RightSection>
-        {/* <TourTriggerButton /> */}
+        <TourTriggerButton />
         <S.RenderModeToggle data-tour="render-mode">
           <S.ModeLabel $active={renderMode === 'svg'}>SVG</S.ModeLabel>
           <Switch

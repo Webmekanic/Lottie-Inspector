@@ -22,9 +22,11 @@ export function Tour() {
   });
 
   const [tooltipPosition, setTooltipPosition] = useState({
-    top: 0,
-    left: 0,
+    top: window.innerHeight / 2,
+    left: window.innerWidth / 2,
   });
+
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
   const updatePositions = useCallback(() => {
     if (!currentStepData || !isActive) return;
@@ -106,6 +108,31 @@ export function Tour() {
     setTooltipPosition({ top, left });
   }, [currentStepData, isActive, nextStep]);
 
+  // Handle tooltip visibility with delay to prevent jumps
+  useEffect(() => {
+    // Reset visibility on step change
+    setIsTooltipVisible(false);
+    
+    // Wait for position calculations to settle before showing tooltip
+    let raf1: number;
+    let raf2: number;
+    
+    raf1 = requestAnimationFrame(() => {
+      // Update positions after first frame
+      updatePositions();
+      
+      raf2 = requestAnimationFrame(() => {
+        // Show tooltip after second frame
+        setIsTooltipVisible(true);
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, [currentStep, isActive, updatePositions]);
+
   useEffect(() => {
     if (isActive) {
       let frameId: number | null = null;
@@ -119,15 +146,9 @@ export function Tour() {
         });
       };
 
-      // Initial position
-      updatePositions();
-
       // Update on window resize or scroll (throttled per animation frame)
       window.addEventListener('resize', handleScrollOrResize);
       window.addEventListener('scroll', handleScrollOrResize, true);
-
-      // Delay to ensure DOM is ready
-      const timer = setTimeout(updatePositions, 100);
 
       return () => {
         if (frameId !== null) {
@@ -136,10 +157,9 @@ export function Tour() {
         }
         window.removeEventListener('resize', handleScrollOrResize);
         window.removeEventListener('scroll', handleScrollOrResize, true);
-        clearTimeout(timer);
       };
     }
-  }, [isActive, currentStep, updatePositions]);
+  }, [isActive, updatePositions]);
 
   if (!isActive || !currentStepData) {
     return null;
@@ -177,6 +197,7 @@ export function Tour() {
         $top={tooltipPosition.top}
         $left={tooltipPosition.left}
         $placement={currentStepData.placement || 'bottom'}
+        $isVisible={isTooltipVisible}
         onClick={handleTooltipClick}
       >
         <S.TooltipHeader>
