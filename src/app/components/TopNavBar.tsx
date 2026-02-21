@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Upload, Download, RotateCcw, Sun, Moon } from 'lucide-react';
 import { Switch } from './ui/switch';
 import { TourTriggerButton } from '../../components/Tour/TourTriggerButton';
+import { UndoRedoControls } from './UndoRedoControls';
 import { useUIStore } from '../../stores/uiStore';
 import * as S from '../../styles/TopNavBarStyles';
 
@@ -14,6 +15,10 @@ interface TopNavBarProps {
   onExport: () => void;
   onReset: () => void;
   hasAnimation: boolean;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 export function TopNavBar({
@@ -25,6 +30,10 @@ export function TopNavBar({
   onExport,
   onReset,
   hasAnimation,
+  canUndo = false,
+  canRedo = false,
+  onUndo = () => {},
+  onRedo = () => {},
 }: TopNavBarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme, toggleTheme } = useUIStore();
@@ -83,10 +92,17 @@ export function TopNavBar({
           <RotateCcw size={16} />
           Reset
         </S.StyledButton>
+        
+        <UndoRedoControls
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={onUndo}
+          onRedo={onRedo}
+        />
       </S.MiddleSection>
 
       <S.RightSection>
-        <TourTriggerButton />
+        {/* <TourTriggerButton /> */}
         <S.RenderModeToggle data-tour="render-mode">
           <S.ModeLabel $active={renderMode === 'svg'}>SVG</S.ModeLabel>
           <Switch

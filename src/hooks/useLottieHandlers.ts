@@ -62,6 +62,14 @@ export function useLottieHandlers({ send }: UseLottieHandlersProps) {
     });
   };
 
+  const handleUndo = () => {
+    send({ type: 'UNDO' });
+  };
+
+  const handleRedo = () => {
+    send({ type: 'REDO' });
+  };
+
   return {
     handleUpload,
     handleExport,
@@ -76,5 +84,7 @@ export function useLottieHandlers({ send }: UseLottieHandlersProps) {
     handleSpeedChange,
     handleLoopToggle,
     handlePropertyChange,
+    handleUndo,
+    handleRedo,
   };
 }

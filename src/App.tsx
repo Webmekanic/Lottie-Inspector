@@ -58,6 +58,32 @@ function App() {
 
   const handlers = useLottieHandlers({ send });
 
+  // Undo/Redo state
+  const canUndo = state.context.historyPast.length > 0;
+  const canRedo = state.context.historyFuture.length > 0;
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modKey && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Redo: Cmd/Ctrl + Shift + Z
+          if (canRedo) handlers.handleRedo();
+        } else {
+          // Undo: Cmd/Ctrl + Z
+          if (canUndo) handlers.handleUndo();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canUndo, canRedo, handlers]);
+
     if (state.matches('error')) {
     return (
       <ErrorState 
@@ -87,6 +113,10 @@ function App() {
         onExport={handlers.handleExport}
         onReset={handlers.handleReset}
         hasAnimation={currentAnimation !== null}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={handlers.handleUndo}
+        onRedo={handlers.handleRedo}
       />
       <MainContent>
         <LeftPanel
