@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMachine } from '@xstate/react';
 import { useUIStore } from './stores/uiStore';
 import { saveToLocalStorage } from './utils/localStorage';
+import { isMacOS } from './utils/platform';
 import { ErrorState } from './app/components/ErrorState';
 import { TopNavBar } from './app/components/TopNavBar';
 import { LeftPanel } from './app/components/LeftPanel';
@@ -65,8 +66,7 @@ function App() {
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-      const modKey = isMac ? e.metaKey : e.ctrlKey;
+      const modKey = isMacOS() ? e.metaKey : e.ctrlKey;
 
       if (modKey && e.key === 'z') {
         e.preventDefault();

@@ -1,5 +1,6 @@
 import { Undo2, Redo2 } from 'lucide-react';
 import * as S from '../../styles/UndoRedoStyles';
+import { getModifierKey, getShiftKey } from '../../utils/platform';
 
 interface UndoRedoControlsProps {
   canUndo: boolean;
@@ -14,9 +15,8 @@ export function UndoRedoControls({
   onUndo,
   onRedo,
 }: UndoRedoControlsProps) {
-  // Detect OS for keyboard shortcut display
-  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-  const modKey = isMac ? '⌘' : 'Ctrl';
+  const modKey = getModifierKey();
+  const shiftKey = getShiftKey();
 
   return (
     <S.UndoRedoContainer>
@@ -44,7 +44,7 @@ export function UndoRedoControls({
       >
         <Redo2 />
         <S.Tooltip>
-          Redo <S.TooltipShortcut>{modKey}+⇧+Z</S.TooltipShortcut>
+          Redo <S.TooltipShortcut>{modKey}+{shiftKey}+Z</S.TooltipShortcut>
         </S.Tooltip>
       </S.UndoRedoButton>
     </S.UndoRedoContainer>
