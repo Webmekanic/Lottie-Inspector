@@ -168,7 +168,6 @@ function MessageBubble({ message, onApply }: {
             {message.content}
           </S.MessageText>
 
-          {/* Preview changes */}
           {message.preview && !message.applied && (
             <S.PreviewContainer>
               <S.PreviewLabel>Preview:</S.PreviewLabel>
@@ -186,7 +185,6 @@ function MessageBubble({ message, onApply }: {
             </S.PreviewContainer>
           )}
 
-          {/* Applied indicator */}
           {message.applied && (
             <S.AppliedIndicator>
               <S.AppliedDot />
