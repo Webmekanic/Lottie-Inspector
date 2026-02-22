@@ -1,24 +1,4 @@
-import styled, { keyframes } from 'styled-components';
-
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-`;
-
-const slideUp = keyframes`
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-`;
+import styled from 'styled-components';
 
 export const TourOverlay = styled.div<{ $isCenterPlacement?: boolean }>`
   position: fixed;
@@ -54,6 +34,7 @@ export const TourTooltip = styled.div<{
   $top: number; 
   $left: number; 
   $placement: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  $isVisible: boolean;
 }>`
   position: fixed;
   top: ${props => props.$top}px;
@@ -69,7 +50,9 @@ export const TourTooltip = styled.div<{
   box-shadow: 
     0 20px 25px -5px rgba(0, 0, 0, 0.5),
     0 10px 10px -5px rgba(0, 0, 0, 0.3);
-  animation: ${slideUp} 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  visibility: ${props => props.$isVisible ? 'visible' : 'hidden'};
+  opacity: ${props => props.$isVisible ? 1 : 0};
+  transition: opacity 0.3s ease;
   
   ${props => props.$placement === 'center' && `
     top: 50%;

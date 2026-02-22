@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMachine } from '@xstate/react';
 import { useUIStore } from './stores/uiStore';
 import { saveToLocalStorage } from './utils/localStorage';
+import { isMacOS } from './utils/platform';
 import { ErrorState } from './app/components/ErrorState';
 import { TopNavBar } from './app/components/TopNavBar';
 import { LeftPanel } from './app/components/LeftPanel';
@@ -43,7 +44,6 @@ function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  // Persist state to localStorage
   useEffect(() => {
     if (currentAnimation) {
       saveToLocalStorage({
@@ -57,6 +57,26 @@ function App() {
   }, [currentAnimation, state.context.originalAnimation, speed, loop, renderMode]);
 
   const handlers = useLottieHandlers({ send });
+  const canUndo = state.context.historyPast.length > 0;
+  const canRedo = state.context.historyFuture.length > 0;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const modKey = isMacOS() ? e.metaKey : e.ctrlKey;
+
+      if (modKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          if (canRedo) handlers.handleRedo();
+        } else {
+          if (canUndo) handlers.handleUndo();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canUndo, canRedo, handlers]);
 
     if (state.matches('error')) {
     return (
@@ -87,6 +107,10 @@ function App() {
         onExport={handlers.handleExport}
         onReset={handlers.handleReset}
         hasAnimation={currentAnimation !== null}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={handlers.handleUndo}
+        onRedo={handlers.handleRedo}
       />
       <MainContent>
         <LeftPanel

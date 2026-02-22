@@ -2,6 +2,23 @@ import { setup, assign, fromPromise } from 'xstate';
 import { LottieAnimation, LottieLayer, RenderMode } from '../types/lottie';
 import { loadFromLocalStorage, clearLocalStorage } from '../utils/localStorage';
 
+// Maximum number of undo/redo states to keep in memory
+const MAX_HISTORY_SIZE = 50;
+
+interface HistoryState {
+  currentAnimation: LottieAnimation;
+  selectedLayer: LottieLayer | null;
+  selectedLayerIndex: number | null;
+}
+
+function addToHistory(history: HistoryState[], newState: HistoryState): HistoryState[] {
+  const newHistory = [...history, newState];
+  if (newHistory.length > MAX_HISTORY_SIZE) {
+    newHistory.shift();
+  }
+  return newHistory;
+}
+
 export interface LottieContext {
   originalAnimation: LottieAnimation | null;
   currentAnimation: LottieAnimation | null;
@@ -13,6 +30,8 @@ export interface LottieContext {
   loop: boolean;
   renderMode: RenderMode;
   error: string | null;
+  historyPast: HistoryState[];
+  historyFuture: HistoryState[];
 }
 
 export type LottieEvent =
@@ -30,7 +49,9 @@ export type LottieEvent =
   | { type: 'TOGGLE_LOOP' }
   | { type: 'SWITCH_RENDER_MODE'; mode: RenderMode }
   | { type: 'EXPORT' }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | { type: 'UNDO' }
+  | { type: 'REDO' };
 
 const parseFile = fromPromise(async ({ input }: { input: { file: File } }): Promise<LottieAnimation> => {
   return new Promise((resolve, reject) => {
@@ -48,9 +69,6 @@ const parseFile = fromPromise(async ({ input }: { input: { file: File } }): Prom
   });
 });
 
-/**
- * Recursively clean lottie-web internal properties from animation data
- */
 function cleanLottieData(obj: any): any {
   if (obj === null || obj === undefined) {
     return obj;
@@ -96,7 +114,6 @@ const exportFile = fromPromise(async ({ input }: { input: { animation: LottieAni
   URL.revokeObjectURL(url);
 });
 
-// Load persisted state from localStorage
 const persistedState = loadFromLocalStorage();
 
 export const lottieStateMachine = setup({
@@ -122,6 +139,8 @@ export const lottieStateMachine = setup({
     loop: persistedState?.loop ?? true,
     renderMode: persistedState?.renderMode ?? 'svg',
     error: null,
+    historyPast: [],
+    historyFuture: [],
   },
   states: {
     idle: {
@@ -169,114 +188,98 @@ export const lottieStateMachine = setup({
           }),
         },
         UPDATE_LAYER_PROPERTY: {
-          actions: assign({
-            currentAnimation: ({ context, event }) => {
-              if (!context.currentAnimation) return null;
-              
-              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const layer = newAnimation.layers[event.layerIndex];
-              
-              if (!layer) return newAnimation;
-              
-              const keys = event.property.split('.');
-              let target: any = layer;
-              
-              for (let i = 0; i < keys.length - 1; i++) {
-                if (!target[keys[i]]) {
-                  target[keys[i]] = {};
-                }
-                target = target[keys[i]];
+          actions: assign(({
+ context, event }) => {
+            if (!context.currentAnimation) return {};
+            
+            // Save current state to history
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
+            
+            const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
+            const layer = newAnimation.layers[event.layerIndex];
+            
+            if (!layer) return { historyPast, historyFuture: [] };
+            
+            const keys = event.property.split('.');
+            let target: any = layer;
+            
+            for (let i = 0; i < keys.length - 1; i++) {
+              if (!target[keys[i]]) {
+                target[keys[i]] = {};
               }
-              
-              target[keys[keys.length - 1]] = event.value;
-              
-              return newAnimation;
-            },
-            selectedLayer: ({ context, event }) => {
-              if (context.selectedLayerIndex !== event.layerIndex || !context.currentAnimation) {
-                return context.selectedLayer;
-              }
-              
-              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const layer = newAnimation.layers[event.layerIndex];
-              
-              if (!layer) return context.selectedLayer;
-              
-              const keys = event.property.split('.');
-              let target: any = layer;
-              
-              for (let i = 0; i < keys.length - 1; i++) {
-                if (!target[keys[i]]) {
-                  target[keys[i]] = {};
-                }
-                target = target[keys[i]];
-              }
-              
-              target[keys[keys.length - 1]] = event.value;
-              
-              return layer;
-            },
+              target = target[keys[i]];
+            }
+            
+            target[keys[keys.length - 1]] = event.value;
+            
+            const selectedLayer = context.selectedLayerIndex === event.layerIndex ? layer : context.selectedLayer;
+            
+            return {
+              currentAnimation: newAnimation,
+              selectedLayer,
+              historyPast,
+              historyFuture: [],
+            };
           }),
         },
         TOGGLE_LAYER_VISIBILITY: {
-          actions: assign({
-            currentAnimation: ({ context, event }) => {
-              if (!context.currentAnimation) return null;
-              
-              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const layer = newAnimation.layers[event.layerIndex];
-              
-              if (layer) {
-                // Toggle hidden property: hd=true means hidden, hd=false/undefined means visible
-                layer.hd = !layer.hd;
-              }
-              
-              return newAnimation;
-            },
-            selectedLayer: ({ context, event }) => {
-              if (context.selectedLayerIndex !== event.layerIndex || !context.currentAnimation) {
-                return context.selectedLayer;
-              }
-              
-              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const layer = newAnimation.layers[event.layerIndex];
-              
-              if (layer) {
-                layer.hd = !layer.hd;
-              }
-              
-              return layer;
-            },
+          actions: assign(({ context, event }) => {
+            if (!context.currentAnimation) return {};
+            
+            // Save current state to history
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
+            
+            const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
+            const layer = newAnimation.layers[event.layerIndex];
+            
+            if (layer) {
+              layer.hd = !layer.hd;
+            }
+            
+            const selectedLayer = context.selectedLayerIndex === event.layerIndex ? layer : context.selectedLayer;
+            
+            return {
+              currentAnimation: newAnimation,
+              selectedLayer,
+              historyPast,
+              historyFuture: [],
+            };
           }),
         },
         TOGGLE_LAYER_LOCK: {
-          actions: assign({
-            currentAnimation: ({ context, event }) => {
-              if (!context.currentAnimation) return null;
-              
-              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const layer = newAnimation.layers[event.layerIndex];
-              
-              if (layer) {
-                layer.locked = !layer.locked;
-              }
-              
-              return newAnimation;
-            },
-            selectedLayer: ({ context, event }) => {
-              if (context.selectedLayerIndex !== event.layerIndex || !context.currentAnimation) {
-                return context.selectedLayer;
-              }
-              
-              const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
-              const updatedLayer = newAnimation.layers[event.layerIndex];
-              
-              if (updatedLayer) {
-                updatedLayer.locked = !updatedLayer.locked;
-              }
-              
-              return updatedLayer;
-            },
+          actions: assign(({ context, event }) => {
+            if (!context.currentAnimation) return {};
+            
+            // Save current state to history
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
+            
+            const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
+            const layer = newAnimation.layers[event.layerIndex];
+            
+            if (layer) {
+              layer.locked = !layer.locked;
+            }
+            
+            const selectedLayer = context.selectedLayerIndex === event.layerIndex ? layer : context.selectedLayer;
+            
+            return {
+              currentAnimation: newAnimation,
+              selectedLayer,
+              historyPast,
+              historyFuture: [],
+            };
           }),
         },
         PLAY: {
@@ -308,6 +311,53 @@ export const lottieStateMachine = setup({
         SWITCH_RENDER_MODE: {
           actions: assign({ renderMode: ({ event }) => event.mode }),
         },
+        UNDO: {
+          actions: assign(({ context }) => {
+            if (context.historyPast.length === 0) return {};
+            
+            const historyPast = [...context.historyPast];
+            const previousState = historyPast.pop()!;
+            
+            const historyFuture = [
+              {
+                currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation!)),
+                selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+                selectedLayerIndex: context.selectedLayerIndex,
+              },
+              ...context.historyFuture,
+            ];
+            
+            return {
+              currentAnimation: previousState.currentAnimation,
+              selectedLayer: previousState.selectedLayer,
+              selectedLayerIndex: previousState.selectedLayerIndex,
+              historyPast,
+              historyFuture,
+            };
+          }),
+        },
+        REDO: {
+          actions: assign(({ context }) => {
+            if (context.historyFuture.length === 0) return {};
+            
+            const historyFuture = [...context.historyFuture];
+            const nextState = historyFuture.shift()!;
+            
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation!)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
+            
+            return {
+              currentAnimation: nextState.currentAnimation,
+              selectedLayer: nextState.selectedLayer,
+              selectedLayerIndex: nextState.selectedLayerIndex,
+              historyPast,
+              historyFuture,
+            };
+          }),
+        },
         EXPORT: 'exporting',
         RESET: {
           actions: [
@@ -320,6 +370,8 @@ export const lottieStateMachine = setup({
               selectedLayer: null,
               currentFrame: 0,
               isPlaying: false,
+              historyPast: [],
+              historyFuture: [],
             }),
             () => clearLocalStorage(),
           ],

@@ -41,6 +41,7 @@ const colors = {
   gray600: '#52525b',
   gray700: '#3f3f46',
   gray800: '#27272a',
+  gray850: '#1f1f22',
   gray900: '#18181b',
   gray950: '#0a0a0d',
 };
