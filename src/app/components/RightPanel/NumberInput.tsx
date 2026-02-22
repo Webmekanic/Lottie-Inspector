@@ -21,19 +21,35 @@ export function NumberInput({
 }: NumberInputProps) {
   const [local, setLocal] = useState(String(Math.round(value * 100) / 100));
   const lastCommittedValue = useRef(value);
+  const isEditing = useRef(false);
 
   useEffect(() => {
-    setLocal(String(Math.round(value * 100) / 100));
-    lastCommittedValue.current = value;
+    if (!isEditing.current) {
+      setLocal(String(Math.round(value * 100) / 100));
+      lastCommittedValue.current = value;
+    }
   }, [value]);
 
   const handleCommit = () => {
+    isEditing.current = false;
     const n = parseFloat(local);
     if (!isNaN(n) && n !== lastCommittedValue.current) {
       lastCommittedValue.current = n;
       onChange(n);
     } else if (isNaN(n)) {
-      setLocal(String(value));
+      setLocal(String(lastCommittedValue.current));
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    isEditing.current = true;
+    const newValue = e.target.value;
+    setLocal(newValue);
+    
+    const n = parseFloat(newValue);
+    if (!isNaN(n)) {
+      lastCommittedValue.current = n;
+      onChange(n);
     }
   };
 
@@ -45,15 +61,14 @@ export function NumberInput({
         step={step}
         min={min}
         max={max}
-        onChange={(e) => {
-          const newValue = e.target.value;
-          setLocal(newValue);
-          // Only update local state, don't trigger onChange yet
+        onFocus={() => {
+          isEditing.current = true;
         }}
+        onChange={handleChange}
         onBlur={handleCommit}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            handleCommit();
+            e.currentTarget.blur();
           }
         }}
         className="h-7 bg-gray-800 border-gray-700 text-gray-200 text-xs font-mono pr-6"
