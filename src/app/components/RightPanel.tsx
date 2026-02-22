@@ -2,7 +2,7 @@ import { Input } from './ui/input';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import * as S from '../../styles/RightPanelStyles';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Move,
   Droplets,
@@ -236,8 +236,6 @@ function updateStrokeOpacity(shapes: LottieShape[], opacity: number): LottieShap
   });
 }
 
-// ── Components ──
-
 function Section({
   icon: Icon,
   title,
@@ -292,10 +290,22 @@ function NumberInput({
   max?: number;
 }) {
   const [local, setLocal] = useState(String(Math.round(value * 100) / 100));
+  const lastCommittedValue = useRef(value);
 
   useEffect(() => {
     setLocal(String(Math.round(value * 100) / 100));
+    lastCommittedValue.current = value;
   }, [value]);
+
+  const handleCommit = () => {
+    const n = parseFloat(local);
+    if (!isNaN(n) && n !== lastCommittedValue.current) {
+      lastCommittedValue.current = n;
+      onChange(n);
+    } else if (isNaN(n)) {
+      setLocal(String(value));
+    }
+  };
 
   return (
     <S.NumberInputWrapper>
@@ -308,21 +318,12 @@ function NumberInput({
         onChange={(e) => {
           const newValue = e.target.value;
           setLocal(newValue);
-          // Update in real-time if valid number
-          const n = parseFloat(newValue);
-          if (!isNaN(n)) {
-            onChange(n);
-          }
+          // Only update local state, don't trigger onChange yet
         }}
-        onBlur={() => {
-          const n = parseFloat(local);
-          if (!isNaN(n)) onChange(n);
-          else setLocal(String(value));
-        }}
+        onBlur={handleCommit}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            const n = parseFloat(local);
-            if (!isNaN(n)) onChange(n);
+            handleCommit();
           }
         }}
         className="h-7 bg-gray-800 border-gray-700 text-gray-200 text-xs font-mono pr-6"

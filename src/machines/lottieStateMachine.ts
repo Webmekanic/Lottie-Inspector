@@ -2,9 +2,21 @@ import { setup, assign, fromPromise } from 'xstate';
 import { LottieAnimation, LottieLayer, RenderMode } from '../types/lottie';
 import { loadFromLocalStorage, clearLocalStorage } from '../utils/localStorage';
 
+// Maximum number of undo/redo states to keep in memory
+const MAX_HISTORY_SIZE = 50;
+
 interface HistoryState {
   currentAnimation: LottieAnimation;
   selectedLayer: LottieLayer | null;
+  selectedLayerIndex: number | null;
+}
+
+function addToHistory(history: HistoryState[], newState: HistoryState): HistoryState[] {
+  const newHistory = [...history, newState];
+  if (newHistory.length > MAX_HISTORY_SIZE) {
+    newHistory.shift();
+  }
+  return newHistory;
 }
 
 export interface LottieContext {
@@ -57,9 +69,6 @@ const parseFile = fromPromise(async ({ input }: { input: { file: File } }): Prom
   });
 });
 
-/**
- * Recursively clean lottie-web internal properties from animation data
- */
 function cleanLottieData(obj: any): any {
   if (obj === null || obj === undefined) {
     return obj;
@@ -105,7 +114,6 @@ const exportFile = fromPromise(async ({ input }: { input: { animation: LottieAni
   URL.revokeObjectURL(url);
 });
 
-// Load persisted state from localStorage
 const persistedState = loadFromLocalStorage();
 
 export const lottieStateMachine = setup({
@@ -185,13 +193,11 @@ export const lottieStateMachine = setup({
             if (!context.currentAnimation) return {};
             
             // Save current state to history
-            const historyPast = [
-              ...context.historyPast,
-              {
-                currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
-                selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
-              },
-            ];
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
             
             const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
             const layer = newAnimation.layers[event.layerIndex];
@@ -225,13 +231,11 @@ export const lottieStateMachine = setup({
             if (!context.currentAnimation) return {};
             
             // Save current state to history
-            const historyPast = [
-              ...context.historyPast,
-              {
-                currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
-                selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
-              },
-            ];
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
             
             const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
             const layer = newAnimation.layers[event.layerIndex];
@@ -255,13 +259,11 @@ export const lottieStateMachine = setup({
             if (!context.currentAnimation) return {};
             
             // Save current state to history
-            const historyPast = [
-              ...context.historyPast,
-              {
-                currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
-                selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
-              },
-            ];
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
             
             const newAnimation = JSON.parse(JSON.stringify(context.currentAnimation));
             const layer = newAnimation.layers[event.layerIndex];
@@ -320,6 +322,7 @@ export const lottieStateMachine = setup({
               {
                 currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation!)),
                 selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+                selectedLayerIndex: context.selectedLayerIndex,
               },
               ...context.historyFuture,
             ];
@@ -327,6 +330,7 @@ export const lottieStateMachine = setup({
             return {
               currentAnimation: previousState.currentAnimation,
               selectedLayer: previousState.selectedLayer,
+              selectedLayerIndex: previousState.selectedLayerIndex,
               historyPast,
               historyFuture,
             };
@@ -339,17 +343,16 @@ export const lottieStateMachine = setup({
             const historyFuture = [...context.historyFuture];
             const nextState = historyFuture.shift()!;
             
-            const historyPast = [
-              ...context.historyPast,
-              {
-                currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation!)),
-                selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
-              },
-            ];
+            const historyPast = addToHistory(context.historyPast, {
+              currentAnimation: JSON.parse(JSON.stringify(context.currentAnimation!)),
+              selectedLayer: context.selectedLayer ? JSON.parse(JSON.stringify(context.selectedLayer)) : null,
+              selectedLayerIndex: context.selectedLayerIndex,
+            });
             
             return {
               currentAnimation: nextState.currentAnimation,
               selectedLayer: nextState.selectedLayer,
+              selectedLayerIndex: nextState.selectedLayerIndex,
               historyPast,
               historyFuture,
             };

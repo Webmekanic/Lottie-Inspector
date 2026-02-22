@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { LottieEvent } from '../machines/lottieStateMachine';
 
 interface UseLottieHandlersProps {
@@ -62,13 +63,13 @@ export function useLottieHandlers({ send }: UseLottieHandlersProps) {
     });
   };
 
-  const handleUndo = () => {
+  const handleUndo = useCallback(() => {
     send({ type: 'UNDO' });
-  };
+  }, [send]);
 
-  const handleRedo = () => {
+  const handleRedo = useCallback(() => {
     send({ type: 'REDO' });
-  };
+  }, [send]);
 
   return {
     handleUpload,

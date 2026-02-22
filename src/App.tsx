@@ -44,7 +44,6 @@ function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  // Persist state to localStorage
   useEffect(() => {
     if (currentAnimation) {
       saveToLocalStorage({
@@ -58,23 +57,18 @@ function App() {
   }, [currentAnimation, state.context.originalAnimation, speed, loop, renderMode]);
 
   const handlers = useLottieHandlers({ send });
-
-  // Undo/Redo state
   const canUndo = state.context.historyPast.length > 0;
   const canRedo = state.context.historyFuture.length > 0;
 
-  // Keyboard shortcuts for undo/redo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const modKey = isMacOS() ? e.metaKey : e.ctrlKey;
 
-      if (modKey && e.key === 'z') {
+      if (modKey && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
-          // Redo: Cmd/Ctrl + Shift + Z
           if (canRedo) handlers.handleRedo();
         } else {
-          // Undo: Cmd/Ctrl + Z
           if (canUndo) handlers.handleUndo();
         }
       }

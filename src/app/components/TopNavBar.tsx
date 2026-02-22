@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { Upload, Download, RotateCcw, Sun, Moon } from 'lucide-react';
 import { Switch } from './ui/switch';
-import { TourTriggerButton } from '../../components/Tour/TourTriggerButton';
 import { UndoRedoControls } from './UndoRedoControls';
 import { useUIStore } from '../../stores/uiStore';
 import * as S from '../../styles/TopNavBarStyles';
