@@ -42,10 +42,8 @@ export const LogoSection = styled.div`
 `;
 
 export const Logo = styled.div`
-  width: ${({ theme }) => theme.spacing[8]};
-  height: ${({ theme }) => theme.spacing[8]};
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.blue500}, ${({ theme }) => theme.colors.purple500});
-  border-radius: ${({ theme }) => theme.borderRadius.md};
+  width: ${({ theme }) => theme.spacing[12]};
+  height: ${({ theme }) => theme.spacing[12]};
   display: flex;
   align-items: center;
   justify-content: center;

@@ -4,6 +4,7 @@ import { Switch } from './ui/switch';
 import { UndoRedoControls } from './UndoRedoControls';
 import { useUIStore } from '../../stores/uiStore';
 import * as S from '../../styles/TopNavBarStyles';
+import logoImage from './assets/lottieInspector.png';
 
 interface TopNavBarProps {
   fileName: string;
@@ -49,9 +50,9 @@ export function TopNavBar({
     <S.NavContainer>
       <S.LeftSection>
         <S.LogoSection>
-          {/* <S.Logo>
-            <S.LogoText>L</S.LogoText>
-          </S.Logo> */}
+          <S.Logo>
+            <img src={logoImage} alt="Lottie Inspector Logo" />
+          </S.Logo>
           <S.Title>Lottie Inspector</S.Title>
         </S.LogoSection>
         <S.FileName>{fileName || 'No file loaded'}</S.FileName>
